@@ -7,8 +7,8 @@
         android:shortcutShortLabel="@string/search">
         <intent
             android:action="moe.koiverse.archivetune.action.SEARCH"
-            android:targetClass="moe.koiverse.archivetune.MainActivity"
-            android:targetPackage="moe.koiverse.archivetune" />
+            android:targetClass="com.diekoma.ytune.MainActivity"
+            android:targetPackage="com.diekoma.ytune" />
     </shortcut>
     <shortcut
         android:enabled="true"
@@ -17,7 +17,7 @@
         android:shortcutShortLabel="@string/filter_library">
         <intent
             android:action="moe.koiverse.archivetune.action.LIBRARY"
-            android:targetClass="moe.koiverse.archivetune.MainActivity"
-            android:targetPackage="moe.koiverse.archivetune" />
+            android:targetClass="com.diekoma.ytune.MainActivity"
+            android:targetPackage="com.diekoma.ytune" />
     </shortcut>
 </shortcuts>

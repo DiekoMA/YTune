@@ -16,11 +16,11 @@ if (localPropertiesFile.exists()) {
 }
 
 android {
-    namespace = "moe.koiverse.archivetune"
+    namespace = "com.diekoma.ytune"
     compileSdk = 36
 
     defaultConfig {
-    applicationId = "moe.koiverse.archivetune"
+    applicationId = "com.diekoma.ytune"
         minSdk = 26
         targetSdk = 36
         versionCode = 132
