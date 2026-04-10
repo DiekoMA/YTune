@@ -31,6 +31,9 @@ import com.diekoma.ytune.constants.YtmSyncKey
 import com.diekoma.ytune.db.MusicDatabase
 import com.diekoma.ytune.db.entities.*
 import com.diekoma.ytune.extensions.toEnum
+import com.diekoma.ytune.innertube.models.AlbumItem
+import com.diekoma.ytune.innertube.models.ArtistItem
+import com.diekoma.ytune.innertube.models.SongItem
 import com.diekoma.ytune.models.SimilarRecommendation
 import com.diekoma.ytune.utils.dataStore
 import com.diekoma.ytune.utils.get
@@ -39,12 +42,15 @@ import com.diekoma.ytune.utils.SyncUtils
 import com.diekoma.ytune.utils.reportException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.ktor.util.Hash.combine
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.random.Random
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -54,6 +60,7 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
     val isRefreshing = MutableStateFlow(false)
     val isLoading = MutableStateFlow(false)
+    val isRandomizing = MutableStateFlow(false)
     private val isInitialLoadComplete = MutableStateFlow(false)
 
     private val quickPicksEnum = context.dataStore.data.map {
@@ -76,6 +83,148 @@ class HomeViewModel @Inject constructor(
 
     val allLocalItems = MutableStateFlow<List<LocalItem>>(emptyList())
     val allYtItems = MutableStateFlow<List<YTItem>>(emptyList())
+
+    val pinnedSpeedDialItems: StateFlow<List<SpeedDialItem>> =
+        database.speedDialDao.getAll()
+            .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+        val speedDialItems: StateFlow<List<YTItem>> =
+            combine(
+                database.speedDialDao.getAll(),
+                keepListening,
+                quickPicks
+            ){ pinned, keepListening, quick ->
+                val pinnedItems = pinned.map { it.toYTItem() }
+                val filled = pinnedItems.toMutableList<YTItem>()
+                val targetSize = 23
+
+                if (filled.size < targetSize) {
+                    keepListening?.let { k ->
+                        val needed = targetSize - filled.size
+                        val available = k.filter { item ->
+                            filled.none { p -> p.id == item.id }
+                        }.mapNotNull { item ->
+                            when (item) {
+                                is Song -> SongItem(
+                                    id = item.id,
+                                    title = item.title,
+                                    artists = item.artists.map {
+                                        com.diekoma.ytune.innertube.models.Artist(
+                                            name = it.name,
+                                            id = it.id
+                                        )
+                                    },
+                                    thumbnail = item.thumbnailUrl ?: "",
+                                    explicit = false
+                                )
+                                is Album -> AlbumItem(
+                                    browseId = item.id,
+                                    playlistId = item.album.playlistId ?: "",
+                                    title = item.title,
+                                    artists = item.artists.map {
+                                        com.diekoma.ytune.innertube.models.Artist(
+                                            name = it.name,
+                                            id = it.id
+                                        )
+                                    },
+                                    year = item.album.year,
+                                    thumbnail = item.thumbnailUrl ?: ""
+                                )
+                                is Artist -> ArtistItem(
+                                    id = item.id,
+                                    title = item.title,
+                                    thumbnail = item.thumbnailUrl ?: "",
+                                    channelId = item.artist.channelId,
+                                    playEndpoint = null,
+                                    shuffleEndpoint = null,
+                                    radioEndpoint = null,
+                                )
+                                else -> null
+                            }
+                        }
+                        filled.addAll(available.take(needed))
+                    }
+                }
+
+                if (filled.size < targetSize) {
+                    quick?.let { q ->
+                        val needed = targetSize - filled.size
+                        val available = q.filter { song ->
+                            filled.none { p -> p.id == song.id}
+                        }.map { song ->
+                            SongItem(
+                                id = song.id,
+                                title = song.title,
+                                artists = song.artists.map { com.diekoma.ytune.innertube.models.Artist(name = it.name, id = it.id) },
+                                thumbnail = song.thumbnailUrl ?: "",
+                                explicit = false
+                            )
+                        }
+                        filled.addAll(available.take(needed))
+                    }
+                }
+
+                filled.take(targetSize)
+            }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    suspend fun getRandomItem(): YTItem? {
+        try {
+            isRandomizing.value = true
+            // Visual feedback for the animation
+            kotlinx.coroutines.delay(1000)
+
+            val userSongs = mutableListOf<YTItem>()
+            val otherSources = mutableListOf<YTItem>()
+
+            quickPicks.value?.let { songs ->
+                userSongs.addAll(songs.map { song ->
+                    SongItem(
+                        id = song.id,
+                        title = song.title,
+                        artists = song.artists.map { com.diekoma.ytune.innertube.models.Artist(name = it.name, id = it.id) },
+                        thumbnail = song.thumbnailUrl ?: "",
+                        explicit = false
+                    )
+                })
+            }
+
+            keepListening.value?.let { items ->
+                items.forEach { item ->
+                    when (item) {
+                        is Song -> userSongs.add(SongItem(
+                            id = item.id,
+                            title = item.title,
+                            artists = item.artists.map { com.diekoma.ytune.innertube.models.Artist(name = it.name, id = it.id) },
+                            thumbnail = item.thumbnailUrl ?: "",
+                            explicit = false
+                        ))
+                        is Album -> otherSources.add(AlbumItem(
+                            browseId = item.id,
+                            playlistId = item.album.playlistId ?: "",
+                            title = item.title,
+                            artists = item.artists.map { com.diekoma.ytune.innertube.models.Artist(name = it.name, id = it.id) },
+                            year = item.album.year,
+                            thumbnail = item.thumbnailUrl ?: ""
+                        ))
+                        else -> {}
+                    }
+                }
+            }
+
+            otherSources.addAll(allYtItems.value)
+
+            // Probability: 80% User Songs, 20% Other Sources
+            val item = if (userSongs.isNotEmpty() && (otherSources.isEmpty() || Random.nextFloat() < 0.8f)) {
+                userSongs.distinctBy { it.id }.shuffled().firstOrNull()
+            } else {
+                otherSources.distinctBy { it.id }.shuffled().firstOrNull()
+            } ?: userSongs.firstOrNull() ?: otherSources.firstOrNull()
+
+            return item
+        } finally {
+            isRandomizing.value = false
+        }
+    }
 
     // Account display info
     val accountName = MutableStateFlow("")
@@ -408,7 +557,7 @@ class HomeViewModel @Inject constructor(
         }
 
         viewModelScope.launch(Dispatchers.IO) {
-            kotlinx.coroutines.delay(3000)
+            delay(3000)
             
             syncUtils.cleanupDuplicatePlaylists()
         }
@@ -448,8 +597,8 @@ class HomeViewModel @Inject constructor(
                                     }
                                 }
                             }
-                            
-                            kotlinx.coroutines.delay(100)
+
+                            delay(100)
 
                             refreshAccountIdentity()
 

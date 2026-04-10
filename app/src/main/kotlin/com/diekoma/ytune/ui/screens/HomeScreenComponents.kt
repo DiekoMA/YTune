@@ -113,6 +113,7 @@ import com.diekoma.ytune.ui.menu.YouTubeArtistMenu
 import com.diekoma.ytune.ui.menu.YouTubePlaylistMenu
 import com.diekoma.ytune.ui.menu.YouTubeSongMenu
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
+import androidx.compose.foundation.layout.BoxWithConstraints
 import com.diekoma.ytune.models.SimilarRecommendation
 import kotlin.math.ceil
 import kotlin.random.Random
@@ -120,9 +121,22 @@ import kotlin.math.min
 
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.diekoma.ytune.LocalDatabase
+import com.diekoma.ytune.LocalPlayerConnection
+import com.diekoma.ytune.db.entities.SpeedDialItem
+import com.diekoma.ytune.ui.component.RandomizeGridItem
+import com.diekoma.ytune.ui.component.SpeedDialGridItem
 import com.diekoma.ytune.viewmodels.HomeViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -247,239 +261,608 @@ fun QuickPicksSection(
     }
 }
 
+//@OptIn(ExperimentalFoundationApi::class)
+//@Composable
+//fun SpeedDialSection(
+//    speedDialSongs: List<YTItem>,
+//    mediaMetadata: MediaMetadata?,
+//    isPlaying: Boolean,
+//    navController: NavController,
+//    playerConnection: PlayerConnection,
+//    menuState: MenuState,
+//    haptic: HapticFeedback,
+//    modifier: Modifier = Modifier
+//) {
+//    val context = LocalContext.current
+//    val distinctSpeedDial = remember(speedDialSongs) { speedDialSongs.distinctBy { it.id } }
+//
+//    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+//        val targetItemSize = 160.dp
+//        val availableWidth = maxWidth - 32.dp
+//        val columns = (availableWidth / targetItemSize).toInt().coerceAtLeast(3)
+//        val rows = when {
+//            columns >= 6 -> 1
+//            columns >= 4 -> 2
+//            else -> 3
+//        }
+//        val itemsPerPage = columns * rows
+//        val itemWidth = availableWidth / columns
+//
+//        data class SpeedDialTile(val key: String, val item: YTItem?)
+//
+//        val tiles = remember(distinctSpeedDial) {
+//            buildList {
+//                distinctSpeedDial.forEach { add(SpeedDialTile(key = "song_${it.id}", item = it)) }
+//                add(SpeedDialTile(key = "random", item = null))
+//            }
+//        }
+//
+//        val pageCount = (tiles.size + itemsPerPage - 1)
+//        val pagerState = rememberPagerState(pageCount = { pageCount })
+//
+//        Column(modifier = Modifier.fillMaxWidth()) {
+//            HorizontalPager(
+//                state = pagerState,
+//                contentPadding = PaddingValues(horizontal = 16.dp),
+//                pageSpacing = 16.dp,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(itemWidth * rows)
+//            ) { page ->
+//                val pageStartIndex = page * itemsPerPage
+//                val pageItems = tiles.drop(pageStartIndex).take(itemsPerPage)
+//
+//                Column(modifier = Modifier.fillMaxWidth()) {
+//                    for (row in 0 until rows) {
+//                        Row(modifier = Modifier.fillMaxWidth()) {
+//                            for (col in 0 until columns) {
+//                                val itemIndex = row * columns + col
+//                                val isRandomSlot = (page == 0 && itemIndex == itemsPerPage - 1)
+//
+//                                if (isRandomSlot) {
+//                                    Box(
+//                                        modifier = Modifier
+//                                            .width(itemWidth)
+//                                            .height(itemWidth)
+//                                            .padding(4.dp)
+//                                    ){
+//                                        Surface(
+//                                            color = MaterialTheme.colorScheme.secondaryContainer,
+//                                            shape = RoundedCornerShape(16.dp),
+//                                            modifier = Modifier
+//                                                .fillMaxSize()
+//                                                .combinedClickable(
+//                                                    onClick = {
+//                                                        if (distinctSpeedDial.isNotEmpty()) {
+//                                                            playerConnection.playQueue(
+//                                                                ListQueue(
+//                                                                    title = context.getString(R.string.speed_dial),
+//                                                                    items = distinctSpeedDial.map { it.toMediaItem() },
+//                                                                    startIndex = Random.nextInt(distinctSpeedDial.size),
+//                                                                )
+//                                                            )
+//                                                        }
+//                                                    },
+//                                                    onLongClick = {  }
+//                                                )
+//                                        ) {
+//                                            Box(
+//                                                contentAlignment = Alignment.Center,
+//                                                modifier = Modifier.fillMaxSize()
+//                                            ) {
+//                                                Icon(
+//                                                    painter = painterResource(R.drawable.casino),
+//                                                    contentDescription = stringResource(R.string.speed_dial_random),
+//                                                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+//                                                    modifier = Modifier.size(36.dp)
+//                                                )
+//                                            }
+//                                        }
+//                                    }else if  (itemIndex < pageItems.size)
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+////    val speedDialIndexById = remember(distinctSpeedDial) { distinctSpeedDial.mapIndexed { index, song -> song.id to index }.toMap() }
+////    val tileSize = 130.dp
+////    val spacing = 10.dp
+////    val state = rememberLazyGridState()
+////
+////    val rowCount = min(3, distinctSpeedDial.size + 1)
+////    val gridHeight = (tileSize * rowCount) + (spacing * (rowCount - 1))
+//
+//
+//
+//
+//
+//    val columnCount = remember(tiles.size, rowCount) {
+//        ceil(tiles.size / rowCount.toFloat()).toInt().coerceAtLeast(1)
+//    }
+//
+//    val orderedTiles = remember(tiles, rowCount, columnCount) {
+//        buildList {
+//            for (column in 0 until columnCount) {
+//                for (row in 0 until rowCount) {
+//                    val index = row * columnCount + column
+//                    if (index < tiles.size) add(tiles[index])
+//                }
+//            }
+//        }
+//    }
+//
+//    fun playSpeedDialQueue(startIndex: Int) {
+//        if (distinctSpeedDial.isEmpty()) return
+//        playerConnection.playQueue(
+//            ListQueue(
+//                title = context.getString(R.string.speed_dial),
+//                items = distinctSpeedDial.map { it.toMediaItem() },
+//                startIndex = startIndex,
+//            )
+//        )
+//    }
+//
+//    val dotState by
+//        remember(state, distinctSpeedDial.size, rowCount) {
+//            derivedStateOf {
+//                val totalSongs = distinctSpeedDial.size
+//                if (totalSongs <= 0) {
+//                    Triple(0, 0, 0)
+//                } else {
+//                    val songsPerDot = 8
+//                    val columnsPerDot =
+//                        ceil(songsPerDot / rowCount.toFloat()).toInt().coerceAtLeast(1)
+//                    val totalSongColumns =
+//                        ceil(totalSongs / rowCount.toFloat()).toInt().coerceAtLeast(1)
+//                    val pages =
+//                        ceil(totalSongColumns / columnsPerDot.toFloat()).toInt().coerceAtLeast(1)
+//                    val currentColumn =
+//                        (state.firstVisibleItemIndex / rowCount).coerceIn(0, totalSongColumns - 1)
+//                    val currentPage = (currentColumn / columnsPerDot).coerceIn(0, pages - 1)
+//                    val dots = min(3, pages)
+//                    val selectedDot =
+//                        if (pages <= 3) currentPage
+//                        else ((currentPage.toFloat() / (pages - 1).coerceAtLeast(1)) * (dots - 1))
+//                            .toInt()
+//                            .coerceIn(0, dots - 1)
+//                    Triple(dots, selectedDot, pages)
+//                }
+//            }
+//        }
+//
+//    val (dotsCount, selectedDotIndex) = dotState.let { (dots, selected, _) -> dots to selected }
+//
+//    Column(modifier = modifier.fillMaxWidth()) {
+//        LazyHorizontalGrid(
+//            state = state,
+//            rows = GridCells.Fixed(rowCount),
+//            horizontalArrangement = Arrangement.spacedBy(spacing),
+//            verticalArrangement = Arrangement.spacedBy(spacing),
+//            contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal).asPaddingValues(),
+//            modifier =
+//                Modifier
+//                    .fillMaxWidth()
+//                    .height(gridHeight),
+//        ) {
+//            items(
+//                items = orderedTiles,
+//                key = { it.key },
+//                contentType = { tile -> if (tile.song == null) "speed_dial_random" else "speed_dial_song" },
+//            ) { tile ->
+//                val song = tile.song
+//                if (song == null) {
+//                    Surface(
+//                        color = MaterialTheme.colorScheme.secondaryContainer,
+//                        shape = RoundedCornerShape(16.dp),
+//                        modifier = Modifier
+//                            .width(tileSize)
+//                            .aspectRatio(1f)
+//                            .combinedClickable(
+//                                onClick = {
+//                                    if (distinctSpeedDial.isNotEmpty()) {
+//                                        playSpeedDialQueue(Random.nextInt(distinctSpeedDial.size))
+//                                    }
+//                                },
+//                                onLongClick = {}
+//                            )
+//                    ) {
+//                        Box(
+//                            contentAlignment = Alignment.Center,
+//                            modifier = Modifier.fillMaxSize()
+//                        ) {
+//                            Icon(
+//                                painter = painterResource(R.drawable.casino),
+//                                contentDescription = stringResource(R.string.speed_dial_random),
+//                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+//                                modifier = Modifier.size(36.dp)
+//                            )
+//                        }
+//                    }
+//                } else {
+//                    val songIndex = speedDialIndexById[song.id] ?: 0
+//                    val isActive = song.id == mediaMetadata?.id
+//
+//                    Box(
+//                        modifier = Modifier
+//                            .width(tileSize)
+//                            .aspectRatio(1f)
+//                            .clip(RoundedCornerShape(16.dp))
+//                            .combinedClickable(
+//                                onClick = {
+//                                    if (isActive) {
+//                                        playerConnection.player.togglePlayPause()
+//                                    } else {
+//                                        playSpeedDialQueue(songIndex)
+//                                    }
+//                                },
+//                                onLongClick = {
+//                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+//                                    menuState.show {
+//                                        SongMenu(
+//                                            originalSong = song,
+//                                            navController = navController,
+//                                            onDismiss = menuState::dismiss
+//                                        )
+//                                    }
+//                                }
+//                            )
+//                    ) {
+//                        AsyncImage(
+//                            model = song.song.thumbnailUrl,
+//                            contentDescription = null,
+//                            contentScale = ContentScale.Crop,
+//                            modifier = Modifier.fillMaxSize()
+//                        )
+//
+//                        Box(
+//                            modifier = Modifier
+//                                .fillMaxSize()
+//                                .background(
+//                                    Brush.verticalGradient(
+//                                        colors = listOf(
+//                                            Color.Transparent,
+//                                            Color.Transparent,
+//                                            Color.Black.copy(alpha = 0.7f)
+//                                        )
+//                                    )
+//                                )
+//                        )
+//
+//                        Text(
+//                            text = song.song.title,
+//                            style = MaterialTheme.typography.titleMedium,
+//                            color = Color.White,
+//                            maxLines = 1,
+//                            overflow = TextOverflow.Ellipsis,
+//                            modifier = Modifier
+//                                .align(Alignment.BottomStart)
+//                                .padding(horizontal = 12.dp, vertical = 10.dp)
+//                        )
+//
+//                        if (isActive && isPlaying) {
+//                            Surface(
+//                                shape = CircleShape,
+//                                color = MaterialTheme.colorScheme.primary,
+//                                modifier = Modifier
+//                                    .align(Alignment.TopEnd)
+//                                    .padding(10.dp)
+//                            ) {
+//                                Icon(
+//                                    painter = painterResource(R.drawable.volume_up),
+//                                    contentDescription = null,
+//                                    tint = MaterialTheme.colorScheme.onPrimary,
+//                                    modifier = Modifier.padding(6.dp).size(16.dp)
+//                                )
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        if (dotsCount > 1) {
+//            Spacer(modifier = Modifier.height(12.dp))
+//            Row(
+//                horizontalArrangement = Arrangement.spacedBy(8.dp),
+//                verticalAlignment = Alignment.CenterVertically,
+//                modifier = Modifier.align(Alignment.CenterHorizontally),
+//            ) {
+//                repeat(dotsCount) { index ->
+//                    val isSelected = index == selectedDotIndex
+//                    Surface(
+//                        color =
+//                            if (isSelected) MaterialTheme.colorScheme.primary
+//                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+//                        shape = CircleShape,
+//                        modifier =
+//                            Modifier.size(
+//                                if (isSelected) 8.dp else 6.dp
+//                            ),
+//                    ) {}
+//                }
+//            }
+//        }
+//    }
+//}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SpeedDialSection(
-    speedDialSongs: List<Song>,
+    speedDialItems: List<YTItem>,
+    pinnedSpeedDialItems: List<SpeedDialItem>,
     mediaMetadata: MediaMetadata?,
     isPlaying: Boolean,
     navController: NavController,
     playerConnection: PlayerConnection,
     menuState: MenuState,
     haptic: HapticFeedback,
+    viewModel: HomeViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val distinctSpeedDial = remember(speedDialSongs) { speedDialSongs.distinctBy { it.id }.take(24) }
-    val speedDialIndexById = remember(distinctSpeedDial) { distinctSpeedDial.mapIndexed { index, song -> song.id to index }.toMap() }
+    val scope = rememberCoroutineScope()
+    var randomizeJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
+    val distinctItems = remember(speedDialItems) { speedDialItems.distinctBy { it.id }.take(24) }
+
     val tileSize = 130.dp
     val spacing = 10.dp
     val state = rememberLazyGridState()
-    val rowCount = min(3, distinctSpeedDial.size + 1)
+
+    val rowCount = if (distinctItems.isEmpty()) 0 else min(3, distinctItems.size)
     val gridHeight = (tileSize * rowCount) + (spacing * (rowCount - 1))
 
-    data class SpeedDialTile(val key: String, val song: Song?)
+    ///
+    val targetItemSize = 160.dp
+    BoxWithConstraints() {
+        val availableWidth = maxWidth - 32.dp
 
-    val tiles = remember(distinctSpeedDial) {
-        buildList {
-            distinctSpeedDial.forEach { add(SpeedDialTile(key = "song_${it.id}", song = it)) }
-            add(SpeedDialTile(key = "random", song = null))
-        }
-    }
-
-    val columnCount = remember(tiles.size, rowCount) {
-        ceil(tiles.size / rowCount.toFloat()).toInt().coerceAtLeast(1)
-    }
-
-    val orderedTiles = remember(tiles, rowCount, columnCount) {
-        buildList {
-            for (column in 0 until columnCount) {
-                for (row in 0 until rowCount) {
-                    val index = row * columnCount + column
-                    if (index < tiles.size) add(tiles[index])
-                }
+        val columns = (availableWidth / targetItemSize).toInt().coerceAtLeast(3)
+        val rows =
+            if (columns >= 6) {
+                1
+            } else if (columns >= 4) {
+                2
+            } else {
+                3
             }
-        }
-    }
+        val itemsPerPage = columns * rows
+        val itemWidth = availableWidth / columns
 
-    fun playSpeedDialQueue(startIndex: Int) {
-        if (distinctSpeedDial.isEmpty()) return
-        playerConnection.playQueue(
-            ListQueue(
-                title = context.getString(R.string.speed_dial),
-                items = distinctSpeedDial.map { it.toMediaItem() },
-                startIndex = startIndex,
-            )
-        )
-    }
+        val database = LocalDatabase.current
+        val isRefreshing by viewModel.isRefreshing.collectAsState()
+        val isRandomizing by viewModel.isRandomizing.collectAsState()
 
-    val dotState by
-        remember(state, distinctSpeedDial.size, rowCount) {
-            derivedStateOf {
-                val totalSongs = distinctSpeedDial.size
-                if (totalSongs <= 0) {
-                    Triple(0, 0, 0)
-                } else {
-                    val songsPerDot = 8
-                    val columnsPerDot =
-                        ceil(songsPerDot / rowCount.toFloat()).toInt().coerceAtLeast(1)
-                    val totalSongColumns =
-                        ceil(totalSongs / rowCount.toFloat()).toInt().coerceAtLeast(1)
-                    val pages =
-                        ceil(totalSongColumns / columnsPerDot.toFloat()).toInt().coerceAtLeast(1)
-                    val currentColumn =
-                        (state.firstVisibleItemIndex / rowCount).coerceIn(0, totalSongColumns - 1)
-                    val currentPage = (currentColumn / columnsPerDot).coerceIn(0, pages - 1)
-                    val dots = min(3, pages)
-                    val selectedDot =
-                        if (pages <= 3) currentPage
-                        else ((currentPage.toFloat() / (pages - 1).coerceAtLeast(1)) * (dots - 1))
-                            .toInt()
-                            .coerceIn(0, dots - 1)
-                    Triple(dots, selectedDot, pages)
-                }
-            }
-        }
-
-    val (dotsCount, selectedDotIndex) = dotState.let { (dots, selected, _) -> dots to selected }
-
-    Column(modifier = modifier.fillMaxWidth()) {
-        LazyHorizontalGrid(
-            state = state,
-            rows = GridCells.Fixed(rowCount),
-            horizontalArrangement = Arrangement.spacedBy(spacing),
-            verticalArrangement = Arrangement.spacedBy(spacing),
-            contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal).asPaddingValues(),
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .height(gridHeight),
+        val playerConnection = LocalPlayerConnection.current
+        val pagerState =
+            rememberPagerState(pageCount = { (speedDialItems.size + itemsPerPage - 1) / itemsPerPage })
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
         ) {
-            items(
-                items = orderedTiles,
-                key = { it.key },
-                contentType = { tile -> if (tile.song == null) "speed_dial_random" else "speed_dial_song" },
-            ) { tile ->
-                val song = tile.song
-                if (song == null) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier
-                            .width(tileSize)
-                            .aspectRatio(1f)
-                            .combinedClickable(
-                                onClick = {
-                                    if (distinctSpeedDial.isNotEmpty()) {
-                                        playSpeedDialQueue(Random.nextInt(distinctSpeedDial.size))
-                                    }
-                                },
-                                onLongClick = {}
-                            )
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.casino),
-                                contentDescription = stringResource(R.string.speed_dial_random),
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                modifier = Modifier.size(36.dp)
-                            )
-                        }
-                    }
-                } else {
-                    val songIndex = speedDialIndexById[song.id] ?: 0
-                    val isActive = song.id == mediaMetadata?.id
+            HorizontalPager(
+                state = pagerState,
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                pageSpacing = 16.dp,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(itemWidth * rows),
+            ) { page ->
+                val pageStartIndex = page * itemsPerPage
+                val pageItems = speedDialItems.drop(pageStartIndex).take(itemsPerPage)
 
-                    Box(
-                        modifier = Modifier
-                            .width(tileSize)
-                            .aspectRatio(1f)
-                            .clip(RoundedCornerShape(16.dp))
-                            .combinedClickable(
-                                onClick = {
-                                    if (isActive) {
-                                        playerConnection.player.togglePlayPause()
-                                    } else {
-                                        playSpeedDialQueue(songIndex)
-                                    }
-                                },
-                                onLongClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    menuState.show {
-                                        SongMenu(
-                                            originalSong = song,
-                                            navController = navController,
-                                            onDismiss = menuState::dismiss
+                Column(modifier = Modifier.fillMaxSize()) {
+                    for (row in 0 until rows) {
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            for (col in 0 until columns) {
+                                val itemIndex = row * columns + col
+
+                                val isRandomizeSlot = (page == 0 && itemIndex == itemsPerPage - 1)
+
+                                if (isRandomizeSlot) {
+                                    Box(
+                                        modifier =
+                                            Modifier
+                                                .width(itemWidth)
+                                                .height(itemWidth)
+                                                .padding(4.dp),
+                                    ) {
+                                        RandomizeGridItem(
+                                            isLoading = isRandomizing,
+                                            onClick = {
+                                                if (isRandomizing) {
+                                                    randomizeJob?.cancel()
+                                                } else  {
+                                                    randomizeJob =
+                                                        scope.launch {
+                                                            val randomItem = viewModel.getRandomItem()
+                                                            if (randomItem != null) {
+                                                                when (randomItem) {
+                                                                    is SongItem -> {
+                                                                        playerConnection?.playQueue(
+                                                                            YouTubeQueue(
+                                                                                randomItem.endpoint
+                                                                                    ?: WatchEndpoint(
+                                                                                        videoId = randomItem.id,
+                                                                                    ),
+                                                                                randomItem.toMediaMetadata(),
+                                                                            ),
+                                                                        )
+                                                                    }
+
+                                                                    is AlbumItem -> {
+                                                                        navController.navigate(
+                                                                            "album/${randomItem.id}",
+                                                                        )
+                                                                    }
+
+                                                                    is ArtistItem -> {
+                                                                        navController.navigate(
+                                                                            "artist/${randomItem.id}",
+                                                                        )
+                                                                    }
+
+                                                                    is PlaylistItem -> {
+                                                                        navController.navigate(
+                                                                            "online_playlist/${randomItem.id}",
+                                                                        )
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                }
+                                            },
                                         )
                                     }
+                                } else if (itemIndex < pageItems.size) {
+                                    val item = pageItems[itemIndex]
+                                    val isPinned by database.speedDialDao
+                                        .isPinned(
+                                            item.id,
+                                        ).collectAsState(initial = false)
+
+                                    Box(
+                                        modifier =
+                                            Modifier
+                                                .width(itemWidth)
+                                                .height(itemWidth)
+                                                .padding(4.dp),
+                                    ) {
+                                        SpeedDialGridItem(
+                                            item = item,
+                                            isPinned = isPinned,
+                                            isActive =
+                                                item.id in listOf(
+                                                    mediaMetadata?.album?.id,
+                                                    mediaMetadata?.id
+                                                ),
+                                            isPlaying = isPlaying,
+                                            modifier =
+                                                Modifier
+                                                    .fillMaxSize()
+                                                    .combinedClickable(
+                                                        onClick = {
+                                                            when (item) {
+                                                                is SongItem -> {
+//                                                                if (!isListenTogetherGuest) {
+//                                                                    playerConnection.playQueue(
+//                                                                        YouTubeQueue(
+//                                                                            item.endpoint
+//                                                                                ?: WatchEndpoint(
+//                                                                                    videoId = item.id,
+//                                                                                ),
+//                                                                            item.toMediaMetadata(),
+//                                                                        ),
+//                                                                    )
+//                                                                }
+                                                                }
+
+                                                                is AlbumItem -> {
+                                                                    navController.navigate("album/${item.id}")
+                                                                }
+
+                                                                is ArtistItem -> {
+                                                                    navController.navigate("artist/${item.id}")
+                                                                }
+
+                                                                is PlaylistItem -> {
+                                                                    val rawType =
+                                                                        pinnedSpeedDialItems
+                                                                            .find {
+                                                                                it.id ==
+                                                                                        item.id
+                                                                            }?.type
+                                                                    if (rawType == "LOCAL_PLAYLIST") {
+                                                                        navController.navigate(
+                                                                            "local_playlist/${item.id}",
+                                                                        )
+                                                                    } else {
+                                                                        navController.navigate(
+                                                                            "online_playlist/${item.id}",
+                                                                        )
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        onLongClick = {
+                                                            haptic.performHapticFeedback(
+                                                                HapticFeedbackType.LongPress,
+                                                            )
+                                                            menuState.show {
+                                                                when (item) {
+                                                                    is SongItem -> {
+                                                                        YouTubeSongMenu(
+                                                                            song = item,
+                                                                            navController = navController,
+                                                                            onDismiss = menuState::dismiss,
+                                                                        )
+                                                                    }
+
+                                                                    is AlbumItem -> {
+                                                                        YouTubeAlbumMenu(
+                                                                            albumItem = item,
+                                                                            navController = navController,
+                                                                            onDismiss = menuState::dismiss,
+                                                                        )
+                                                                    }
+
+                                                                    is ArtistItem -> {
+                                                                        YouTubeArtistMenu(
+                                                                            artist = item,
+                                                                            onDismiss = menuState::dismiss,
+                                                                        )
+                                                                    }
+
+                                                                    is PlaylistItem -> {
+                                                                        YouTubePlaylistMenu(
+                                                                            playlist = item,
+                                                                            coroutineScope = scope,
+                                                                            onDismiss = menuState::dismiss,
+                                                                        )
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                    ),
+                                        )
+                                    }
+                                } else {
+                                    Spacer(modifier = Modifier.width(itemWidth))
                                 }
-                            )
-                    ) {
-                        AsyncImage(
-                            model = song.song.thumbnailUrl,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(
-                                    Brush.verticalGradient(
-                                        colors = listOf(
-                                            Color.Transparent,
-                                            Color.Transparent,
-                                            Color.Black.copy(alpha = 0.7f)
-                                        )
-                                    )
-                                )
-                        )
-
-                        Text(
-                            text = song.song.title,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.White,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier
-                                .align(Alignment.BottomStart)
-                                .padding(horizontal = 12.dp, vertical = 10.dp)
-                        )
-
-                        if (isActive && isPlaying) {
-                            Surface(
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(10.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.volume_up),
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.padding(6.dp).size(16.dp)
-                                )
                             }
                         }
                     }
                 }
             }
-        }
 
-        if (dotsCount > 1) {
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-            ) {
-                repeat(dotsCount) { index ->
-                    val isSelected = index == selectedDotIndex
-                    Surface(
-                        color =
-                            if (isSelected) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-                        shape = CircleShape,
-                        modifier =
-                            Modifier.size(
-                                if (isSelected) 8.dp else 6.dp
-                            ),
-                    ) {}
+            if (pagerState.pageCount > 1) {
+                Row(
+                    modifier =
+                        Modifier
+                            .height(24.dp)
+                            .fillMaxWidth(),
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    repeat(pagerState.pageCount) { iteration ->
+                        val color =
+                            if (pagerState.currentPage == iteration) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            }
+                        Box(
+                            modifier =
+                                Modifier
+                                    .padding(4.dp)
+                                    .clip(CircleShape)
+                                    .background(color)
+                                    .size(8.dp),
+                        )
+                    }
                 }
             }
         }
@@ -1036,7 +1419,7 @@ fun HomePageSectionTitle(
         onClick = section.endpoint?.browseId?.let { browseId ->
             {
                 if (browseId == "FEmusic_moods_and_genres")
-                    navController.navigate(Screens.MoodAndGenres.route)
+                    //navController.navigate(Screens.MoodAndGenres.route)
                 else
                     navController.navigate("browse/$browseId")
             }

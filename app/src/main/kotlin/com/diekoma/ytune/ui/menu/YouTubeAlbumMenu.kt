@@ -429,8 +429,7 @@ fun YouTubeAlbumMenu(
             ListItem(
                 headlineContent = {
                     Text(
-//                        text = if (isPinned) stringResource(R.string.unpin_from_speed_dial) else stringResource(R.string.pin_to_speed_dial)
-                        text = "Pin"
+                        text = if (isPinned) stringResource(R.string.unpin_from_speed_dial) else stringResource(R.string.pin_to_speed_dial)
                     )
                 },
                 leadingContent = {

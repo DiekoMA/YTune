@@ -12,13 +12,16 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
@@ -41,6 +44,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -50,16 +56,48 @@ import com.diekoma.ytune.LocalPlayerConnection
 import com.diekoma.ytune.R
 import com.diekoma.ytune.constants.InnerTubeCookieKey
 import com.diekoma.ytune.constants.DisableBlurKey
+import com.diekoma.ytune.constants.RandomizeHomeOrderKey
 import com.diekoma.ytune.constants.ShowHomeCategoryChipsKey
 import com.diekoma.ytune.ui.component.ChipsRow
 import com.diekoma.ytune.ui.component.LocalBottomSheetPageState
+import com.diekoma.ytune.ui.component.SpeedDialGridItem
 import com.diekoma.ytune.ui.component.LocalMenuState
 import com.diekoma.ytune.ui.component.NavigationTitle
 import com.diekoma.ytune.ui.utils.SnapLayoutInfoProvider
 import com.diekoma.ytune.utils.rememberPreference
 import com.diekoma.ytune.viewmodels.HomeViewModel
+import kotlin.random.Random
 
 
+
+sealed class HomeSection(
+    val id: String,
+    val baseWeight: Int,
+) {
+    data object SpeedDial : HomeSection("speed_dial", 100)
+
+    data object QuickPicks : HomeSection("quick_picks", 90)
+
+    data object DailyDiscover : HomeSection("daily_discover", 80)
+
+    data object KeepListening : HomeSection("keep_listening", 50)
+
+    data object AccountPlaylists : HomeSection("account_playlists", 40)
+
+    data object ForgottenFavorites : HomeSection("forgotten_favorites", 30)
+
+    data object FromTheCommunity : HomeSection("from_the_community", 20)
+
+    data class SimilarRecommendation(
+        val index: Int,
+    ) : HomeSection("similar_recommendation_$index", 10)
+
+    data class HomePageSection(
+        val index: Int,
+    ) : HomeSection("home_page_section_$index", 10)
+
+    data object MoodAndGenres : HomeSection("mood_and_genres", 5)
+}
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -70,12 +108,16 @@ fun HomeScreen(
     val bottomSheetPageState = LocalBottomSheetPageState.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val haptic = LocalHapticFeedback.current
+    val (randomizeHomeOrder) = rememberPreference(RandomizeHomeOrderKey, true)
+    var randomSeed by rememberSaveable { mutableLongStateOf(System.currentTimeMillis()) }
+
 
     val isPlaying by playerConnection.isPlaying.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
 
     val quickPicks by viewModel.quickPicks.collectAsState()
-    val speedDialSongs by viewModel.speedDialSongs.collectAsState()
+    val speedDialItems by viewModel.speedDialItems.collectAsState()
+    val pinnedSpeedDialItems by viewModel.pinnedSpeedDialItems.collectAsState()
     val forgottenFavorites by viewModel.forgottenFavorites.collectAsState()
     val keepListening by viewModel.keepListening.collectAsState()
     val homePage by viewModel.homePage.collectAsState()
@@ -103,6 +145,34 @@ fun HomeScreen(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val scrollToTop =
         backStackEntry?.savedStateHandle?.getStateFlow("scrollToTop", false)?.collectAsState()
+
+    val sections = remember(
+        speedDialItems, quickPicks, keepListening, forgottenFavorites, homePage, randomizeHomeOrder, randomSeed
+    ) {
+        val list = mutableListOf<HomeSection>()
+
+        if (speedDialItems.isNotEmpty()) list.add(HomeSection.SpeedDial)
+        if (quickPicks?.isNotEmpty() == true) list.add(HomeSection.QuickPicks)
+        if (keepListening?.isNotEmpty() == true) list.add(HomeSection.KeepListening)
+        if (forgottenFavorites?.isNotEmpty() == true) list.add(HomeSection.ForgottenFavorites)
+
+        homePage?.sections?.forEachIndexed { index, _ ->
+            list.add(HomeSection.HomePageSection(index))
+        }
+
+        if (randomizeHomeOrder) {
+            val random = Random(randomSeed)
+            list.sortByDescending { it.baseWeight * random.nextFloat() }
+        } else {
+            list.sortByDescending { it.baseWeight }
+        }
+        list
+    }
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            randomSeed = System.currentTimeMillis()
+        }
+    }
 
     LaunchedEffect(scrollToTop?.value) {
         if (scrollToTop?.value == true) {
@@ -145,7 +215,7 @@ fun HomeScreen(
     val color4 = MaterialTheme.colorScheme.primaryContainer
     val color5 = MaterialTheme.colorScheme.secondaryContainer
     val surfaceColor = MaterialTheme.colorScheme.surface
-    
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -251,7 +321,7 @@ fun HomeScreen(
                     }
             ) {}
         }
-        
+
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
@@ -288,149 +358,133 @@ fun HomeScreen(
                     }
                 }
 
-                quickPicks?.takeIf { it.isNotEmpty() }?.let { picks ->
-            /*
-                item {
-                    NavigationTitle(
-                        title = stringResource(R.string.quick_picks),
-                        modifier = Modifier.animateItem()
-                    )
+                items(sections, key = { it.id }) { section ->
+                    when (section) {
+                        is HomeSection.SpeedDial -> {
+                            Column(Modifier.animateItem()) {
+                                NavigationTitle(title = stringResource(R.string.speed_dial), modifier = Modifier.animateItem())
+                                SpeedDialSection(
+                                    speedDialItems = speedDialItems,
+                                    pinnedSpeedDialItems = pinnedSpeedDialItems,
+                                    mediaMetadata = mediaMetadata,
+                                    isPlaying = isPlaying,
+                                    navController = navController,
+                                    playerConnection = playerConnection,
+                                    menuState = menuState,
+                                    haptic = haptic
+                                )
+                            }
+                        }
+
+                        is HomeSection.QuickPicks -> {
+//                            NavigationTitle(
+//                                title = stringResource(R.string.keep_listening),
+//                                modifier = Modifier.animateItem()
+//                            )
+                            QuickPicksSection(
+                                quickPicks = quickPicks!!,
+                                mediaMetadata = mediaMetadata,
+                                isPlaying = isPlaying,
+                                navController = navController,
+                                playerConnection = playerConnection,
+                                menuState = menuState,
+                                haptic = haptic
+                            )
+                        }
+
+                        is HomeSection.KeepListening -> {
+                            Column(Modifier.animateItem()) {
+                                NavigationTitle(title = stringResource(R.string.keep_listening))
+                                KeepListeningSection(
+                                    keepListening = keepListening!!,
+                                    mediaMetadata = mediaMetadata,
+                                    isPlaying = isPlaying,
+                                    navController = navController,
+                                    playerConnection = playerConnection,
+                                    menuState = menuState,
+                                    haptic = haptic,
+                                    scope = scope
+                                )
+                            }
+                        }
+                        is HomeSection.ForgottenFavorites -> {
+                            Column(Modifier.animateItem()) {
+                                NavigationTitle(
+                                    title = stringResource(R.string.forgotten_favorites),
+                                    modifier = Modifier.animateItem()
+                                )
+                                ForgottenFavoritesSection(
+                                    forgottenFavorites = forgottenFavorites!!,
+                                    mediaMetadata = mediaMetadata,
+                                    isPlaying = isPlaying,
+                                    horizontalLazyGridItemWidth = horizontalLazyGridItemWidth,
+                                    lazyGridState = forgottenFavoritesLazyGridState,
+                                    snapLayoutInfoProvider = forgottenFavoritesSnapLayoutInfoProvider,
+                                    navController = navController,
+                                    playerConnection = playerConnection,
+                                    menuState = menuState,
+                                    haptic = haptic
+                                )
+                            }
+                        }
+
+                        is HomeSection.AccountPlaylists -> {
+                            this@LazyColumn.AccountPlaylistsContainer(
+                                viewModel = viewModel,
+                                accountName = accountName,
+                                accountImageUrl = url,
+                                mediaMetadata = mediaMetadata,
+                                isPlaying = isPlaying,
+                                navController = navController,
+                                playerConnection = playerConnection,
+                                menuState = menuState,
+                                haptic = haptic,
+                                scope = scope
+                            )
+                        }
+
+                        is HomeSection.SimilarRecommendation -> {
+                            this@LazyColumn.SimilarRecommendationsContainer(
+                                viewModel = viewModel,
+                                mediaMetadata = mediaMetadata,
+                                isPlaying = isPlaying,
+                                navController = navController,
+                                playerConnection = playerConnection,
+                                menuState = menuState,
+                                haptic = haptic,
+                                scope = scope
+                            )
+                        }
+
+                        is HomeSection.HomePageSection -> {
+                            val data = homePage?.sections?.getOrNull(section.index) ?: return@items
+                            Column(Modifier.animateItem()) {
+                                HomePageSectionTitle(
+                                    section = data,
+                                    navController = navController,
+                                    modifier = Modifier.animateItem()
+                                )
+
+                                HomePageSectionContent(
+                                    section = data,
+                                    mediaMetadata = mediaMetadata,
+                                    isPlaying = isPlaying,
+                                    navController = navController,
+                                    playerConnection = playerConnection,
+                                    menuState = menuState,
+                                    haptic = haptic,
+                                    scope = scope
+                                )
+                            }
+                        }
+                        else -> {}
+                    }
                 }
-            */
-
-                item {
-                    QuickPicksSection(
-                        quickPicks = picks,
-                        mediaMetadata = mediaMetadata,
-                        isPlaying = isPlaying,
-                        navController = navController,
-                        playerConnection = playerConnection,
-                        menuState = menuState,
-                        haptic = haptic
-                    )
-                }
-            }
-
-            speedDialSongs.takeIf { it.isNotEmpty() }?.let { songs ->
-                item {
-                    NavigationTitle(
-                        title = stringResource(R.string.speed_dial),
-                        modifier = Modifier.animateItem()
-                    )
-                }
-
-                item {
-                    SpeedDialSection(
-                        speedDialSongs = songs,
-                        mediaMetadata = mediaMetadata,
-                        isPlaying = isPlaying,
-                        navController = navController,
-                        playerConnection = playerConnection,
-                        menuState = menuState,
-                        haptic = haptic
-                    )
-                }
-            }
-
-            keepListening?.takeIf { it.isNotEmpty() }?.let { items ->
-                item {
-                    NavigationTitle(
-                        title = stringResource(R.string.keep_listening),
-                        modifier = Modifier.animateItem()
-                    )
-                }
-
-                item {
-                    KeepListeningSection(
-                        keepListening = items,
-                        mediaMetadata = mediaMetadata,
-                        isPlaying = isPlaying,
-                        navController = navController,
-                        playerConnection = playerConnection,
-                        menuState = menuState,
-                        haptic = haptic,
-                        scope = scope
-                    )
-                }
-            }
-
-            AccountPlaylistsContainer(
-                viewModel = viewModel,
-                accountName = accountName,
-                accountImageUrl = url,
-                mediaMetadata = mediaMetadata,
-                isPlaying = isPlaying,
-                navController = navController,
-                playerConnection = playerConnection,
-                menuState = menuState,
-                haptic = haptic,
-                scope = scope
-            )
-
-            forgottenFavorites?.takeIf { it.isNotEmpty() }?.let { favorites ->
-                item {
-                    NavigationTitle(
-                        title = stringResource(R.string.forgotten_favorites),
-                        modifier = Modifier.animateItem()
-                    )
-                }
-
-                item {
-                    ForgottenFavoritesSection(
-                        forgottenFavorites = favorites,
-                        mediaMetadata = mediaMetadata,
-                        isPlaying = isPlaying,
-                        horizontalLazyGridItemWidth = horizontalLazyGridItemWidth,
-                        lazyGridState = forgottenFavoritesLazyGridState,
-                        snapLayoutInfoProvider = forgottenFavoritesSnapLayoutInfoProvider,
-                        navController = navController,
-                        playerConnection = playerConnection,
-                        menuState = menuState,
-                        haptic = haptic
-                    )
-                }
-            }
-
-            SimilarRecommendationsContainer(
-                viewModel = viewModel,
-                mediaMetadata = mediaMetadata,
-                isPlaying = isPlaying,
-                navController = navController,
-                playerConnection = playerConnection,
-                menuState = menuState,
-                haptic = haptic,
-                scope = scope
-            )
-
-            homePage?.sections?.forEach { section ->
-                item {
-                    HomePageSectionTitle(
-                        section = section,
-                        navController = navController,
-                        modifier = Modifier.animateItem()
-                    )
-                }
-
-                item {
-                    HomePageSectionContent(
-                        section = section,
-                        mediaMetadata = mediaMetadata,
-                        isPlaying = isPlaying,
-                        navController = navController,
-                        playerConnection = playerConnection,
-                        menuState = menuState,
-                        haptic = haptic,
-                        scope = scope
-                    )
+                if (isLoading || homePage?.continuation != null && homePage?.sections?.isNotEmpty() == true) {
+                    item { HomeLoadingShimmer(modifier = Modifier.animateItem()) }
                 }
             }
 
-            if (isLoading || homePage?.continuation != null && homePage?.sections?.isNotEmpty() == true) {
-                item {
-                    HomeLoadingShimmer(modifier = Modifier.animateItem())
-                }
-            }
-            }
 
             Indicator(
                 isRefreshing = isRefreshing,

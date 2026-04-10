@@ -80,6 +80,7 @@ import com.diekoma.ytune.constants.ListItemHeight
 import com.diekoma.ytune.constants.ListThumbnailSize
 import com.diekoma.ytune.db.entities.Album
 import com.diekoma.ytune.db.entities.Song
+import com.diekoma.ytune.db.entities.SpeedDialItem
 import com.diekoma.ytune.extensions.toMediaItem
 import com.diekoma.ytune.playback.ExoDownloadService
 import com.diekoma.ytune.playback.queues.ListQueue
@@ -106,11 +107,13 @@ fun AlbumMenu(
     val playerConnection = LocalPlayerConnection.current ?: return
     val scope = rememberCoroutineScope()
     val libraryAlbum by database.album(originalAlbum.id).collectAsState(initial = originalAlbum)
+
     val album = libraryAlbum ?: originalAlbum
     var songs by remember {
         mutableStateOf(emptyList<Song>())
     }
 
+    val isPinned by database.speedDialDao.isPinned(album.id).collectAsState(initial = false)
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
@@ -443,6 +446,41 @@ fun AlbumMenu(
                 },
                 modifier = Modifier.clickable {
                     showChoosePlaylistDialog = true
+                }
+            )
+        }
+        item {
+            ListItem(
+                headlineContent = {
+                    Text(
+                        text = if (isPinned) stringResource(R.string.unpin_from_speed_dial) else stringResource(R.string.pin_to_speed_dial)
+                    )
+                },
+                leadingContent = {
+                    Icon(
+                        painter = painterResource(R.drawable.add),
+                        contentDescription = null,
+                    )
+                },
+                modifier = Modifier.clickable {
+                    coroutineScope.launch(Dispatchers.IO) {
+                        if (isPinned) {
+                            database.speedDialDao.delete(album.id)
+                        } else {
+                            database.speedDialDao.insert(
+                                SpeedDialItem(
+                                    id = album.id,
+                                    secondaryId = album.album.playlistId,
+                                    title = album.album.title,
+                                    subtitle = album.artists.joinToString(", ") { it.name },
+                                    thumbnailUrl = album.album.thumbnailUrl,
+                                    type = "ALBUM",
+                                    explicit = album.album.explicit,
+                                ),
+                            )
+                        }
+                    }
+                    onDismiss()
                 }
             )
         }

@@ -677,7 +677,7 @@ class MainActivity : ComponentActivity() {
                         listOf(
                             Screens.Home.route,
                             Screens.Search.route,
-                            Screens.MoodAndGenres.route,
+                            //Screens.MoodAndGenres.route,
                             Screens.Library.route,
                             "settings",
                         )
@@ -1167,7 +1167,7 @@ class MainActivity : ComponentActivity() {
                                     if (shouldShowTopBar) {
                                         val shouldUseFloatingTopBar = remember(navBackStackEntry) {
                                             navBackStackEntry?.destination?.route == Screens.Home.route ||
-                                                navBackStackEntry?.destination?.route == Screens.MoodAndGenres.route ||
+                                                //navBackStackEntry?.destination?.route == Screens.MoodAndGenres.route ||
                                                 navBackStackEntry?.destination?.route == Screens.Library.route
                                         }
                                         val shouldShowBlurBackground = remember(navBackStackEntry) {
