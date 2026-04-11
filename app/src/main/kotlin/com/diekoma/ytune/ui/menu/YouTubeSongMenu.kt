@@ -77,6 +77,7 @@ import com.diekoma.ytune.constants.ListItemHeight
 import com.diekoma.ytune.constants.ListThumbnailSize
 import com.diekoma.ytune.constants.ThumbnailCornerRadius
 import com.diekoma.ytune.db.entities.SongEntity
+import com.diekoma.ytune.db.entities.SpeedDialItem
 import com.diekoma.ytune.extensions.toMediaItem
 import com.diekoma.ytune.models.MediaMetadata
 import com.diekoma.ytune.models.toMediaMetadata
@@ -90,6 +91,8 @@ import com.diekoma.ytune.ui.utils.ShowMediaInfo
 import com.diekoma.ytune.utils.joinByBullet
 import com.diekoma.ytune.utils.makeTimeString
 import com.diekoma.ytune.utils.rememberPreference
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
 @SuppressLint("MutableCollectionMutableState")
@@ -118,6 +121,8 @@ fun YouTubeSongMenu(
     val (artistSeparators) = rememberPreference(ArtistSeparatorsKey, defaultValue = ",;/&")
     val (externalDownloaderEnabled) = rememberPreference(ExternalDownloaderEnabledKey, defaultValue = false)
     val (externalDownloaderPackage) = rememberPreference(ExternalDownloaderPackageKey, defaultValue = "")
+
+    val isPinned by database.speedDialDao.isPinned(song.id).collectAsState(initial = false)
 
     // Split artists by configured separators
     data class SplitArtist(
@@ -400,6 +405,33 @@ fun YouTubeSongMenu(
                             inLibrary(song.id, LocalDateTime.now())
                         }
                     }
+                }
+            )
+        }
+        item {
+            ListItem(
+                headlineContent = {
+                    Text(
+                        text = if (isPinned) stringResource(R.string.unpin_from_speed_dial) else stringResource(R.string.pin_to_speed_dial)
+                    )
+                },
+                leadingContent = {
+                    Icon(
+                        painter = painterResource(R.drawable.add),
+                        contentDescription = null,
+                    )
+                },
+                modifier = Modifier.clickable {
+                    coroutineScope.launch(Dispatchers.IO) {
+                        if (isPinned) {
+                            database.speedDialDao.delete(song.id)
+                        } else {
+                            database.speedDialDao.insert(
+                                SpeedDialItem.fromYTItem(song),
+                            )
+                        }
+                    }
+                    onDismiss()
                 }
             )
         }

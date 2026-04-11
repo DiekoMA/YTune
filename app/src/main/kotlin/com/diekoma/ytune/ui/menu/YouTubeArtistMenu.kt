@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
@@ -40,10 +41,14 @@ import com.diekoma.ytune.LocalDatabase
 import com.diekoma.ytune.LocalPlayerConnection
 import com.diekoma.ytune.R
 import com.diekoma.ytune.db.entities.ArtistEntity
+import com.diekoma.ytune.db.entities.SpeedDialItem
 import com.diekoma.ytune.playback.queues.YouTubeQueue
 import com.diekoma.ytune.ui.component.NewAction
 import com.diekoma.ytune.ui.component.NewActionGrid
 import com.diekoma.ytune.ui.component.YouTubeListItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,7 +60,9 @@ fun YouTubeArtistMenu(
     val database = LocalDatabase.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val libraryArtist by database.artist(artist.id).collectAsState(initial = null)
+    val scope = rememberCoroutineScope()
 
+    val isPinned by database.speedDialDao.isPinned(libraryArtist!!.id).collectAsState(initial = false)
     YouTubeListItem(
         item = artist,
         trailingContent = {},
@@ -184,6 +191,35 @@ fun YouTubeArtistMenu(
                             )
                         }
                     }
+                }
+            )
+        }
+
+        // Pin to speed dial button
+        item {
+            ListItem(
+                headlineContent = {
+                    Text(
+                        text = if (isPinned) stringResource(R.string.unpin_from_speed_dial) else stringResource(R.string.pin_to_speed_dial)
+                    )
+                },
+                leadingContent = {
+                    Icon(
+                        painter = painterResource(R.drawable.add),
+                        contentDescription = null,
+                    )
+                },
+                modifier = Modifier.clickable {
+                    scope.launch(Dispatchers.IO) {
+                        if (isPinned) {
+                            database.speedDialDao.delete(artist.id)
+                        } else {
+                            database.speedDialDao.insert(
+                                SpeedDialItem.fromYTItem(artist),
+                            )
+                        }
+                    }
+                    onDismiss()
                 }
             )
         }

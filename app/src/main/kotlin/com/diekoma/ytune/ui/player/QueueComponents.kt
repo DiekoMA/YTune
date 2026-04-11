@@ -47,8 +47,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -62,17 +64,20 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import coil3.compose.AsyncImage
 import com.diekoma.ytune.R
 import com.diekoma.ytune.db.entities.FormatEntity
 import com.diekoma.ytune.models.MediaMetadata
 import com.diekoma.ytune.ui.component.ActionPromptDialog
 import com.diekoma.ytune.ui.component.BottomSheetState
+import com.diekoma.ytune.ui.component.TextFieldDialog
 import com.diekoma.ytune.ui.component.bottomSheetDraggable
 import com.diekoma.ytune.utils.makeTimeString
 import kotlin.math.roundToInt
@@ -100,8 +105,23 @@ fun CurrentSongHeader(
     onShuffleClick: () -> Unit,
     onLockClick: () -> Unit,
     onInfiniteQueueClick: () -> Unit,
+    queueWindows: List<Timeline.Window>,
+    onSaveQueue: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showSaveDialog by remember { mutableStateOf(false) }
+
+    if (showSaveDialog) {
+        TextFieldDialog(
+            icon = { Icon(painter = painterResource(R.drawable.playlist_add), contentDescription = null) },
+            title = { Text(text = stringResource(R.string.save_queue_as_playlist)) },
+            onDismiss = { showSaveDialog = false },
+            onDone = { name ->
+                onSaveQueue(name)
+                showSaveDialog = false
+            }
+        )
+    }
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -307,20 +327,50 @@ fun CurrentSongHeader(
 
         Spacer(modifier = Modifier.height(14.dp))
 
-        Text(
-            text = stringResource(R.string.queue_continue_playing),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = onBackgroundColor
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 6.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = stringResource(R.string.queue_continue_playing),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = onBackgroundColor
+                )
 
-        Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(2.dp))
 
-        Text(
-            text = stringResource(R.string.queue_autoplaying_similar),
-            style = MaterialTheme.typography.bodySmall,
-            color = onBackgroundColor.copy(alpha = 0.5f)
-        )
+                Text(
+                    text = stringResource(R.string.queue_autoplaying_similar),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = onBackgroundColor.copy(alpha = 0.5f)
+                )
+            }
+
+            TextButton(
+                onClick = { showSaveDialog = true }
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(R.drawable.playlist_add),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = onBackgroundColor
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Save",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = onBackgroundColor
+                    )
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(12.dp))
 

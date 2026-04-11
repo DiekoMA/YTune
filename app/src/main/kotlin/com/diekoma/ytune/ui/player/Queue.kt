@@ -109,6 +109,14 @@ import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import com.diekoma.ytune.LocalDatabase
+import com.diekoma.ytune.constants.InnerTubeCookieKey
+import com.diekoma.ytune.db.entities.PlaylistEntity
+import com.diekoma.ytune.db.entities.PlaylistSongMap
+import com.diekoma.ytune.innertube.YouTube
+import java.time.LocalDateTime
+import java.util.UUID
+import java.util.logging.Logger
 
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalFoundationApi::class)
@@ -127,9 +135,11 @@ fun Queue(
     pureBlack: Boolean,
 ) {
     val context = LocalContext.current
+    val innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")
     val haptic = LocalHapticFeedback.current
     val clipboardManager = LocalClipboard.current
     val menuState = LocalMenuState.current
+    val database = LocalDatabase.current
     val bottomSheetPageState = LocalBottomSheetPageState.current
 
     val playerConnection = LocalPlayerConnection.current ?: return
@@ -427,7 +437,7 @@ fun Queue(
 
         val coroutineScope = rememberCoroutineScope()
 
-
+        var syncedPlaylist by remember { mutableStateOf(false) }
 
         val headerItems = 1
         val lazyListState = rememberLazyListState()
@@ -441,6 +451,8 @@ fun Queue(
                 queueWindows[currentWindowIndex].uid
             } else null
         }
+
+        val isSignedIn = innerTubeCookie.isNotEmpty()
 
         val reorderableState = rememberReorderableLazyListState(
             lazyListState = lazyListState,
@@ -557,6 +569,7 @@ fun Queue(
                     locked = effectiveLocked,
                     songCount = queueWindows.size,
                     queueDuration = queueLength,
+                    queueWindows = queueWindows,
                     infiniteQueueEnabled = infiniteQueueEnabled,
                     backgroundColor = backgroundColor,
                     onBackgroundColor = onBackgroundColor,
@@ -600,6 +613,44 @@ fun Queue(
                             playerConnection.service.onInfiniteQueueEnabled()
                         } else {
                             playerConnection.service.onInfiniteQueueDisabled()
+                        }
+                    },
+                    onSaveQueue = { playlistName ->
+                        coroutineScope.launch(Dispatchers.IO) {
+                            val browseId = if (isSignedIn) {
+                                YouTube.createPlaylist(playlistName).getOrNull()
+                            } else if (syncedPlaylist) {
+                                Logger.getLogger("Queue").warning("Not signed in")
+                                return@launch
+                            } else null
+
+                            val metadataList = queueWindows.mapNotNull { it.mediaItem.metadata }
+                            val playlistId = browseId ?: "local_${UUID.randomUUID()}"
+                            database.withTransaction {
+                                insert (
+                                    PlaylistEntity(
+                                        id = playlistId,  // Set ID explicitly
+                                        name = playlistName,
+                                        browseId = browseId,
+                                        bookmarkedAt = LocalDateTime.now(),
+                                        isEditable = true,
+                                    )
+                                )
+
+                                metadataList.forEach { insert(it)}
+
+
+                                metadataList.forEachIndexed { index, song ->
+                                    insert(
+                                        PlaylistSongMap(
+                                            playlistId = playlistId,  // Use same ID
+                                            songId = song.id,
+                                            position = index
+                                        )
+                                    )
+                                }
+
+                            }
                         }
                     }
                 )

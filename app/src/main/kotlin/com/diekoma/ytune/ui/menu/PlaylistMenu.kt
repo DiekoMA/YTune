@@ -63,6 +63,7 @@ import com.diekoma.ytune.R
 import com.diekoma.ytune.db.entities.Playlist
 import com.diekoma.ytune.db.entities.PlaylistSong
 import com.diekoma.ytune.db.entities.Song
+import com.diekoma.ytune.db.entities.SpeedDialItem
 import com.diekoma.ytune.extensions.toMediaItem
 import com.diekoma.ytune.playback.ExoDownloadService
 import com.diekoma.ytune.playback.queues.ListQueue
@@ -115,6 +116,7 @@ fun PlaylistMenu(
     }
 
     val editable: Boolean = playlist.playlist.isEditable == true
+    val isPinned by database.speedDialDao.isPinned(playlist.id).collectAsState(initial = false)
 
     LaunchedEffect(songs) {
         if (songs.isEmpty()) return@LaunchedEffect
@@ -485,6 +487,38 @@ fun PlaylistMenu(
                             playerConnection.addToQueue(songs.map { it.toMediaItem() })
                         },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    )
+
+                    ListItem(
+                        headlineContent = {
+                            Text(
+                                text = if (isPinned) stringResource(R.string.unpin_from_speed_dial) else stringResource(R.string.pin_to_speed_dial)
+                            )
+                        },
+                        leadingContent = {
+                            Icon(
+                                painter = painterResource(R.drawable.add),
+                                contentDescription = null,
+                            )
+                        },
+                        modifier = Modifier.clickable {
+                            coroutineScope.launch(Dispatchers.IO) {
+                                if (isPinned) {
+                                    database.speedDialDao.delete(playlist.id)
+                                } else {
+                                    database.speedDialDao.insert(
+                                        SpeedDialItem(
+                                            id = playlist.id,
+                                            title = playlist.playlist.name,
+                                            subtitle = null,
+                                            thumbnailUrl = playlist.thumbnails.firstOrNull(),
+                                            type = "LOCAL_PLAYLIST",
+                                        ),
+                                    )
+                                }
+                            }
+                            onDismiss()
+                        }
                     )
 
                     if (editable && autoPlaylist != true) {

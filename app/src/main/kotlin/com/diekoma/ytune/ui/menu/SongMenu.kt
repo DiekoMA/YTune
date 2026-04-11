@@ -86,6 +86,7 @@ import com.diekoma.ytune.db.entities.ArtistEntity
 import com.diekoma.ytune.db.entities.Event
 import com.diekoma.ytune.db.entities.PlaylistSong
 import com.diekoma.ytune.db.entities.Song
+import com.diekoma.ytune.db.entities.SpeedDialItem
 import com.diekoma.ytune.extensions.toMediaItem
 import com.diekoma.ytune.models.toMediaMetadata
 import com.diekoma.ytune.playback.ExoDownloadService
@@ -126,6 +127,7 @@ fun SongMenu(
     var refetchIconDegree by remember { mutableFloatStateOf(0f) }
 
     val cacheViewModel = hiltViewModel<CachePlaylistViewModel>()
+    val isPinned by database.speedDialDao.isPinned(song.id).collectAsState(initial = false)
 
     val rotationAnimation by animateFloatAsState(
         targetValue = refetchIconDegree,
@@ -137,16 +139,16 @@ fun SongMenu(
     val (artistSeparators) = rememberPreference(ArtistSeparatorsKey, defaultValue = ",;/&")
     val (externalDownloaderEnabled) = rememberPreference(ExternalDownloaderEnabledKey, defaultValue = false)
     val (externalDownloaderPackage) = rememberPreference(ExternalDownloaderPackageKey, defaultValue = "")
-    val (speedDialSongIds, onSpeedDialSongIdsChange) = rememberPreference(SpeedDialSongIdsKey, "")
-    val speedDialSongs = remember(speedDialSongIds) {
-        speedDialSongIds
-            .split(",")
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
-            .distinct()
-            .take(24)
-    }
-    val isInSpeedDial = remember(speedDialSongs, song.id) { song.id in speedDialSongs }
+//    val (speedDialSongIds, onSpeedDialSongIdsChange) = rememberPreference(SpeedDialSongIdsKey, "")
+//    val speedDialSongs = remember(speedDialSongIds) {
+//        speedDialSongIds
+//            .split(",")
+//            .map { it.trim() }
+//            .filter { it.isNotEmpty() }
+//            .distinct()
+//            .take(24)
+//    }
+//    val isInSpeedDial = remember(speedDialSongs, song.id) { song.id in speedDialSongs }
 
     val orderedArtists by produceState(initialValue = emptyList<ArtistEntity>(), song) {
         withContext(Dispatchers.IO) {
@@ -553,32 +555,37 @@ fun SongMenu(
                 ListItem(
                     headlineContent = {
                         Text(
-                            text = stringResource(
-                                if (isInSpeedDial) R.string.remove_from_speed_dial
-                                else R.string.pin_to_speed_dial,
-                            ),
+                            text = if (isPinned) stringResource(R.string.unpin_from_speed_dial) else stringResource(R.string.pin_to_speed_dial)
                         )
                     },
                     leadingContent = {
                         Icon(
-                            painter = painterResource(if (isInSpeedDial) R.drawable.bookmark_filled else R.drawable.bookmark),
+                            painter = painterResource(R.drawable.add),
                             contentDescription = null,
                         )
                     },
                     modifier = Modifier.clickable {
-                        val updatedIds = if (isInSpeedDial) {
-                            speedDialSongs.filterNot { it == song.id }
-                        } else {
-                            (speedDialSongs + song.id).distinct().take(24)
+                        coroutineScope.launch(Dispatchers.IO) {
+                            if (isPinned) {
+                                database.speedDialDao.delete(song.id)
+                            } else {
+                                database.speedDialDao.insert(
+                                    SpeedDialItem(
+                                        id = song.id,
+                                        title = song.title,
+                                        subtitle = song.artists.joinToString(", ") { it.name },
+                                        thumbnailUrl = song.thumbnailUrl,
+                                        type = "SONG",
+                                        explicit = song.song.explicit,
+                                    ),
+                                )
+                            }
                         }
-                        onSpeedDialSongIdsChange(updatedIds.joinToString(","))
                         onDismiss()
-                    },
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    }
                 )
             }
         }
-
         item {
             Spacer(modifier = Modifier.height(12.dp))
         }

@@ -1,45 +1,32 @@
 <div align="center">
 
-  <img src="https://github.com/koiverse/ArchiveTune/blob/main/fastlane/metadata/android/en-US/images/icon.png" width="160" height="160" alt="ArchiveTune Logo" style="border-radius: 22%">
+  <img src="https://github.com/koiverse/YTune/blob/main/fastlane/metadata/android/en-US/images/icon.png" width="160" height="160" alt="YTune Logo" style="border-radius: 22%">
 
-  <h1>ArchiveTune</h1>
+  <h1>YTune</h1>
 
-  <p align="center">
-    <strong>Redefining the YouTube Music Experience on Android.</strong>
-    <br />
-    <em>It’s high-performance, totally private, and packed with features for people who really care about their experience.</em>
-  </p>
-
-  <p align="center">
-    <a href="https://archivetune.koiiverse.cloud"><b>Official Website</b></a> •
-    <a href="#features"><b>Features</b></a> •
-    <a href="#download-now"><b>Download</b></a> •
-    <a href="#screenshots"><b>Screenshots</b></a> •
-    <a href="https://github.com/koiverse/ArchiveTune/issues/new/choose"><b>Support</b></a>
-  </p>
 
   <div align="center">
-    <img src="https://img.shields.io/github/v/release/koiverse/ArchiveTune?style=for-the-badge&color=6366f1&labelColor=1e1e2e&logo=github" alt="Latest Version" />
-    <img src="https://img.shields.io/github/downloads/koiverse/ArchiveTune/total?style=for-the-badge&color=6366f1&labelColor=1e1e2e&logo=github" alt="Downloads" />
-    <img src="https://img.shields.io/github/stars/koiverse/ArchiveTune?style=for-the-badge&color=6366f1&labelColor=1e1e2e&logo=github" alt="Stars" />
-    <img src="https://img.shields.io/github/license/koiverse/ArchiveTune?style=for-the-badge&color=6366f1&labelColor=1e1e2e" alt="License" />
+    <img src="https://img.shields.io/github/v/release/koiverse/YTune?style=for-the-badge&color=6366f1&labelColor=1e1e2e&logo=github" alt="Latest Version" />
+    <img src="https://img.shields.io/github/downloads/koiverse/YTune/total?style=for-the-badge&color=6366f1&labelColor=1e1e2e&logo=github" alt="Downloads" />
+    <img src="https://img.shields.io/github/stars/koiverse/YTune?style=for-the-badge&color=6366f1&labelColor=1e1e2e&logo=github" alt="Stars" />
+    <img src="https://img.shields.io/github/license/koiverse/YTune?style=for-the-badge&color=6366f1&labelColor=1e1e2e" alt="License" />
     <img src="https://img.shields.io/badge/Architecture-MVVM-6366f1?style=for-the-badge&labelColor=1e1e2e&logo=kotlin" alt="MVVM Architecture" />
     <img src="https://img.shields.io/badge/Language-Kotlin-7f52ff?style=for-the-badge&logo=kotlin&color=6366f1&labelColor=1e1e2e" alt="Kotlin Language" />
     <img src="https://img.shields.io/badge/Toolkit-Jetpack_Compose-4285f4?style=for-the-badge&logo=jetpack-compose&color=6366f1&labelColor=1e1e2e" alt="Jetpack Compose Toolkit" />
     <img src="https://img.shields.io/badge/Design-Material_3-000000?style=for-the-badge&logo=material-design&color=6366f1&labelColor=1e1e2e" alt="Material Design 3" />
-    <a href="https://t.me/ArchiveTuneGC"><img src="https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram" /></a>
+    <a href="https://t.me/YTuneGC"><img src="https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram" /></a>
   </div>
   
   <br />
 
   <a href="https://trendshift.io/repositories/17521" target="_blank">
-    <img src="https://trendshift.io/api/badge/repositories/17521" alt="ArchiveTune | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/>
+    <img src="https://trendshift.io/api/badge/repositories/17521" alt="YTune | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/>
   </a>
 </div>
 
 <hr />
 
-**ArchiveTune** isn’t just another generic YouTube Music wrapper. It’s a fully custom-built player made from the ground up, because we think your music should stay private, look clean, and work exactly the way you expect. If you care about sound quality and want something that actually feels good to use, this is it.
+**YTune** This is just a fork of YTune with some features added and tweaked, like bringing back the proper speed dial from metrolist, adding features from yt music like saving queues as playlists and more.
 
 ---
 
@@ -52,14 +39,14 @@
 
 <div align="center">
 
-<img src="https://github.com/koiverse/ArchiveTune/blob/main/fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_1.jpg" alt="Browse" width="30%" />
-<img src="https://github.com/koiverse/ArchiveTune/blob/main/fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_2.jpg" alt="Live Lyrics" width="30%" />
-<img src="https://github.com/koiverse/ArchiveTune/blob/main/fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_3.jpg" alt="Theme Customization" width="30%" />
-<img src="https://github.com/koiverse/ArchiveTune/blob/main/fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_4.jpg" alt="Live Statistics" width="30%" />
-<img src="https://github.com/koiverse/ArchiveTune/blob/main/fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_5.jpg" alt="Artist" width="30%" />
-<img src="https://github.com/koiverse/ArchiveTune/blob/main/fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_6.jpg" alt="Album" width="30%" />
-<img src="https://github.com/koiverse/ArchiveTune/blob/main/fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_7.jpg" alt="Player" width="30%" />
-<img src="https://github.com/koiverse/ArchiveTune/blob/main/fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_8.jpg" alt="Settings" width="30%" />
+<img src="https://github.com/koiverse/YTune/blob/main/fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_1.jpg" alt="Browse" width="30%" />
+<img src="https://github.com/koiverse/YTune/blob/main/fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_2.jpg" alt="Live Lyrics" width="30%" />
+<img src="https://github.com/koiverse/YTune/blob/main/fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_3.jpg" alt="Theme Customization" width="30%" />
+<img src="https://github.com/koiverse/YTune/blob/main/fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_4.jpg" alt="Live Statistics" width="30%" />
+<img src="https://github.com/koiverse/YTune/blob/main/fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_5.jpg" alt="Artist" width="30%" />
+<img src="https://github.com/koiverse/YTune/blob/main/fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_6.jpg" alt="Album" width="30%" />
+<img src="https://github.com/koiverse/YTune/blob/main/fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_7.jpg" alt="Player" width="30%" />
+<img src="https://github.com/koiverse/YTune/blob/main/fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot_8.jpg" alt="Settings" width="30%" />
 
 </div>
 
@@ -164,13 +151,13 @@
   <tbody>
     <tr>
       <td align="center">
-        <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/koiverse/ArchiveTune/">
-          <img src="https://github.com/ImranR98/Obtainium/blob/main/assets/graphics/badge_obtainium.png" height="50" alt="Get ArchiveTune on Obtainium">
+        <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/koiverse/YTune/">
+          <img src="https://github.com/ImranR98/Obtainium/blob/main/assets/graphics/badge_obtainium.png" height="50" alt="Get YTune on Obtainium">
         </a>
       </td>
       <td align="center">
-        <a href="https://apt.izzysoft.de/fdroid/index/apk/moe.koiverse.archivetune">
-          <img src="https://raw.githubusercontent.com/koiverse/ArchiveTune/757d5932832e1da27ced56de98c5ad1275cf0db1/assets/IzzyOnDroidButtonBorder.svg" height="50" alt="Get ArchiveTune on IzzyOnDroid">
+        <a href="https://apt.izzysoft.de/fdroid/index/apk/moe.koiverse.YTune">
+          <img src="https://raw.githubusercontent.com/koiverse/YTune/757d5932832e1da27ced56de98c5ad1275cf0db1/assets/IzzyOnDroidButtonBorder.svg" height="50" alt="Get YTune on IzzyOnDroid">
         </a>
       </td>
     </tr>
@@ -179,8 +166,8 @@
     </tr>
     <tr>
       <td align="center" colspan="2">
-        <a href="https://github.com/koiverse/ArchiveTune/releases/latest">
-          <img src="https://raw.githubusercontent.com/koiverse/ArchiveTune/refs/heads/main/assets/badge_github.png" height="50" alt="Get ArchiveTune on GitHub">
+        <a href="https://github.com/koiverse/YTune/releases/latest">
+          <img src="https://raw.githubusercontent.com/koiverse/YTune/refs/heads/main/assets/badge_github.png" height="50" alt="Get YTune on GitHub">
         </a>
       </td>
     </tr>
@@ -190,13 +177,13 @@
     </tr>
     <tr>
       <td align="center">
-        <a href="https://www.openapk.net/archivetune/moe.koiverse.archivetune/">
-          <img src="https://www.openapk.net/images/openapk-badge.png" height="75" alt="Get ArchiveTune on OpenAPK">
+        <a href="https://www.openapk.net/YTune/moe.koiverse.YTune/">
+          <img src="https://www.openapk.net/images/openapk-badge.png" height="75" alt="Get YTune on OpenAPK">
         </a>
       </td>
       <td align="center">
         <a href="https://m.doyo.cn/app/539242.html">
-          <img src="https://raw.githubusercontent.com/koiverse/ArchiveTune/refs/heads/dev/assets/badge_doyo.png" height="50" alt="Get ArchiveTune on Doyo.cn">
+          <img src="https://raw.githubusercontent.com/koiverse/YTune/refs/heads/dev/assets/badge_doyo.png" height="50" alt="Get YTune on Doyo.cn">
         </a>
       </td>
     </tr>
@@ -214,8 +201,8 @@
   <tbody>
     <tr>
       <td align="center">
-        <a href="https://nightly.link/koiverse/ArchiveTune/workflows/build/dev/app-universal-release">
-          <img src="https://raw.githubusercontent.com/koiverse/ArchiveTune/refs/heads/main/assets/badge_github.png" height="50" alt="Download the latest ArchiveTune nightly build">
+        <a href="https://nightly.link/koiverse/YTune/workflows/build/dev/app-universal-release">
+          <img src="https://raw.githubusercontent.com/koiverse/YTune/refs/heads/main/assets/badge_github.png" height="50" alt="Download the latest YTune nightly build">
         </a>
       </td>
     </tr>
@@ -224,31 +211,23 @@
 
 </div>
 
-
-## ❓ Need Help or Have Questions?
-Join Our Telegram Channels for Support and Discussion.
-
-[![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/ArchiveTuneGC)
-
----
-
 ## 🌍 Globalization
 
-ArchiveTune belongs to everyone. Help us localize the experience for your region.
+YTune belongs to everyone. Help us localize the experience for your region.
 
 <div align="center">
-  <a href="https://translate.codeberg.org/engage/archivetune/">
-    <img src="https://translate.codeberg.org/widget/archivetune/horizontal-blue.svg" alt="Translation status" />
+  <a href="https://translate.codeberg.org/engage/YTune/">
+    <img src="https://translate.codeberg.org/widget/YTune/horizontal-blue.svg" alt="Translation status" />
   </a>
 </div>
 
 ### ✨ Project Contributors
-<a href="https://github.com/koiverse/ArchiveTune/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=koiverse/ArchiveTune" />
+<a href="https://github.com/koiverse/YTune/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=koiverse/YTune" />
 </a>
 
 ### 🛠️ Development & Engineering
-Interested in building the project or contributing? ArchiveTune is built on a high-performance Kotlin stack.
+Interested in building the project or contributing? YTune is built on a high-performance Kotlin stack.
 <a href="CONTRIBUTING.md"><b>Read the Build & Contribution Guide →</b></a>
 
 ---
@@ -257,6 +236,7 @@ Interested in building the project or contributing? ArchiveTune is built on a hi
 
 We stand on the shoulders of open-source giants:
 - **Metrolist** by [Mostafa Alagamy](https://github.com/mostafaalagamy/Metrolist) For Base framework.
+- **YTune** by https://github.com/koiverse/YTune For Base i worked off.
 - **Kizzy** by [dead8309](https://github.com/dead8309/Kizzy) For Discord Integration.
 - **SimpMusic** by [maxrave-dev](https://github.com/maxrave-dev/SimpMusic) For Lyrics API Provider.
 - [BetterLyrics](https://better-lyrics.boidu.dev/) For word-by-word Lyrics API Provider & Artwork Provider.
@@ -268,7 +248,7 @@ We stand on the shoulders of open-source giants:
 
 ## ⚖️ Legal Disclaimer
 
-ArchiveTune is an independent third-party client.
+YTune is an independent third-party client.
 - Not affiliated with Google LLC or YouTube.
 - Does not bypass YouTube's technical protections.
 - Users are encouraged to support artists by purchasing music via official channels.
@@ -276,8 +256,8 @@ ArchiveTune is an independent third-party client.
 ---
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/koiverse/ArchiveTune/refs/heads/dev/fastlane/metadata/android/en-US/images/ArchiveTuneFull.png" alt="ArchiveTune Banner" style="width: 100%; max-width: 500px;">
-  <p><b>If ArchiveTune elevated your music experience, please consider giving us a ⭐</b></p>
+  <img src="https://raw.githubusercontent.com/koiverse/YTune/refs/heads/dev/fastlane/metadata/android/en-US/images/YTuneFull.png" alt="YTune Banner" style="width: 100%; max-width: 500px;">
+  <p><b>If YTune elevated your music experience, please consider giving us a ⭐</b></p>
   <br />
-  <img src="https://raw.githubusercontent.com/koiverse/ArchiveTune/refs/heads/dev/assets/badge_part.png" alt="ArchiveTune Banner" width="160" height="160">
+  <img src="https://raw.githubusercontent.com/koiverse/YTune/refs/heads/dev/assets/badge_part.png" alt="YTune Banner" width="160" height="160">
 </div>

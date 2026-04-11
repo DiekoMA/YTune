@@ -113,6 +113,7 @@ fun AlbumMenu(
         mutableStateOf(emptyList<Song>())
     }
 
+
     val isPinned by database.speedDialDao.isPinned(album.id).collectAsState(initial = false)
     val coroutineScope = rememberCoroutineScope()
 

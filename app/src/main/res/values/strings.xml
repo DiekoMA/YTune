@@ -132,6 +132,8 @@
     <string name="pitch">Pitch</string>
     <string name="pitch_mode_semitones_short">st</string>
     <string name="pitch_mode_multiplier_short">x</string>
+    <string name="save_queue_as_playlist">Save Queue as Playlist</string>
+    <string name="playlist_created">Playlist Created</string>
     <!-- Sort menu -->
     <string name="sort_by_create_date">Date added</string>
     <string name="sort_by_name">Name</string>

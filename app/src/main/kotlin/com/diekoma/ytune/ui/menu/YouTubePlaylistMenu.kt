@@ -82,6 +82,7 @@ import com.diekoma.ytune.constants.ListThumbnailSize
 import com.diekoma.ytune.constants.ThumbnailCornerRadius
 import com.diekoma.ytune.db.entities.PlaylistEntity
 import com.diekoma.ytune.db.entities.PlaylistSongMap
+import com.diekoma.ytune.db.entities.SpeedDialItem
 import com.diekoma.ytune.extensions.toMediaItem
 import com.diekoma.ytune.models.MediaMetadata
 import com.diekoma.ytune.models.toMediaMetadata
@@ -122,6 +123,8 @@ fun YouTubePlaylistMenu(
     var showChoosePlaylistDialog by rememberSaveable { mutableStateOf(false) }
     var showImportPlaylistDialog by rememberSaveable { mutableStateOf(false) }
     var showErrorPlaylistAddDialog by rememberSaveable { mutableStateOf(false) }
+
+    val isPinned by database.speedDialDao.isPinned(playlist.id).collectAsState(initial = false)
 
     val notAddedList by remember {
         mutableStateOf(mutableListOf<MediaMetadata>())
@@ -666,6 +669,37 @@ fun YouTubePlaylistMenu(
                     )
                 }
             }
+        }
+        item {
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        item {
+            ListItem(
+                headlineContent = {
+                    Text(
+                        text = if (isPinned) stringResource(R.string.unpin_from_speed_dial) else stringResource(R.string.pin_to_speed_dial)
+                    )
+                },
+                leadingContent = {
+                    Icon(
+                        painter = painterResource(R.drawable.add),
+                        contentDescription = null,
+                    )
+                },
+                modifier = Modifier.clickable {
+                    coroutineScope.launch(Dispatchers.IO) {
+                        if (isPinned) {
+                            database.speedDialDao.delete(playlist.id)
+                        } else {
+                            database.speedDialDao.insert(
+                                SpeedDialItem.fromYTItem(playlist),
+                            )
+                        }
+                    }
+                    onDismiss()
+                }
+            )
         }
 
         item {

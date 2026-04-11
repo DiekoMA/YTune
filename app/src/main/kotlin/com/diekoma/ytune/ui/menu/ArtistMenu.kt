@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ListItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -38,6 +39,7 @@ import com.diekoma.ytune.LocalPlayerConnection
 import com.diekoma.ytune.R
 import com.diekoma.ytune.constants.ArtistSongSortType
 import com.diekoma.ytune.db.entities.Artist
+import com.diekoma.ytune.db.entities.SpeedDialItem
 import com.diekoma.ytune.extensions.toMediaItem
 import com.diekoma.ytune.playback.queues.ListQueue
 import com.diekoma.ytune.ui.component.ArtistListItem
@@ -60,6 +62,7 @@ fun ArtistMenu(
     val playerConnection = LocalPlayerConnection.current ?: return
     val artistState = database.artist(originalArtist.id).collectAsState(initial = originalArtist)
     val artist = artistState.value ?: originalArtist
+    val isPinned by database.speedDialDao.isPinned(artist.id).collectAsState(initial = false)
 
     ArtistListItem(
         artist = artist,
@@ -200,6 +203,41 @@ fun ArtistMenu(
                     database.transaction {
                         update(artist.artist.toggleLike())
                     }
+                }
+            )
+        }
+
+        // Pin to speed dial button
+        item {
+            ListItem(
+                headlineContent = {
+                    Text(
+                        text = if (isPinned) stringResource(R.string.unpin_from_speed_dial) else stringResource(R.string.pin_to_speed_dial)
+                    )
+                },
+                leadingContent = {
+                    Icon(
+                        painter = painterResource(R.drawable.add),
+                        contentDescription = null,
+                    )
+                },
+                modifier = Modifier.clickable {
+                    coroutineScope.launch(Dispatchers.IO) {
+                        if (isPinned) {
+                            database.speedDialDao.delete(artist.id)
+                        } else {
+                            database.speedDialDao.insert(
+                                SpeedDialItem(
+                                    id = artist.id,
+                                    title = artist.artist.name,
+                                    subtitle = null,
+                                    thumbnailUrl = artist.artist.thumbnailUrl,
+                                    type = "ARTIST",
+                                ),
+                            )
+                        }
+                    }
+                    onDismiss()
                 }
             )
         }
