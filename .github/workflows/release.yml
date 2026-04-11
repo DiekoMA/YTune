@@ -316,10 +316,7 @@ jobs:
           UNIVERSAL_APK=$(find downloaded_artifacts/YTune -name "*.apk")
           ABI_APKS=$(find downloaded_artifacts -path "*/app-*-release/*.apk")
 
-          # Cleaned up heredoc for safety
-          cat > release_notes.md <<EOF
-          ${{ steps.build_changelog.outputs.changelog }}
-          EOF
+          echo '${{ steps.build_changelog.outputs.changelog }}' | cut -c1-100000 > release_notes.md
           
           gh release create "v${{ needs.check-version.outputs.new_version }}" \
             --title "${{ needs.check-version.outputs.new_version }}" \
