@@ -238,7 +238,7 @@ jobs:
           RELEASE_DIR="${{ steps.release_dir.outputs.release_dir }}"
           mkdir -p "$RELEASE_DIR/out"
           if [ "${{ matrix.abi }}" = "universal" ]; then
-            find "$RELEASE_DIR" -name "*-signed.apk" -o -name "*-unsigned-signed.apk" | xargs -I{} mv {} "$RELEASE_DIR/out/ArchiveTune.apk"
+            find "$RELEASE_DIR" -name "*-signed.apk" -o -name "*-unsigned-signed.apk" | xargs -I{} mv {} "$RELEASE_DIR/out/YTune.apk"
           else
             find "$RELEASE_DIR" -name "*-signed.apk" -o -name "*-unsigned-signed.apk" | xargs -I{} mv {} "$RELEASE_DIR/out/app-${{ matrix.abi }}-release.apk"
           fi
@@ -246,8 +246,8 @@ jobs:
       - name: Upload Signed APKs
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.abi == 'universal' && 'ArchiveTune' || format('app-{0}-release', matrix.abi) }}
-          path: ${{ steps.release_dir.outputs.release_dir }}/out/${{ matrix.abi == 'universal' && 'ArchiveTune.apk' || format('app-{0}-release.apk', matrix.abi) }}
+          name: ${{ matrix.abi == 'universal' && 'YTune' || format('app-{0}-release', matrix.abi) }}
+          path: ${{ steps.release_dir.outputs.release_dir }}/out/${{ matrix.abi == 'universal' && 'YTune.apk' || format('app-{0}-release.apk', matrix.abi) }}
 
   create-release:
     needs: [check-version, build]
@@ -313,7 +313,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          UNIVERSAL_APK=$(find downloaded_artifacts/ArchiveTune -name "*.apk")
+          UNIVERSAL_APK=$(find downloaded_artifacts/YTune -name "*.apk")
           ABI_APKS=$(find downloaded_artifacts -path "*/app-*-release/*.apk")
 
           # Cleaned up heredoc for safety
