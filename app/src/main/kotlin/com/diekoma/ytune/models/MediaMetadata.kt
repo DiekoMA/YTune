@@ -9,9 +9,12 @@
 package com.diekoma.ytune.models
 
 import androidx.compose.runtime.Immutable
+import com.diekoma.ytune.db.entities.SearchHistory
 import com.diekoma.ytune.innertube.models.SongItem
 import com.diekoma.ytune.db.entities.Song
 import com.diekoma.ytune.db.entities.SongEntity
+import com.diekoma.ytune.innertube.models.Artist
+import com.diekoma.ytune.innertube.models.ArtistItem
 import com.diekoma.ytune.ui.utils.resize
 import java.io.Serializable
 import java.time.LocalDateTime
@@ -67,6 +70,39 @@ data class MediaMetadata(
             inLibrary = inLibrary,
         )
 }
+
+
+fun SearchHistory.toMediaMetadata(): MediaMetadata? {
+    val vId = videoId ?: return null
+
+    return MediaMetadata(
+        id = vId,
+        title = title ?: query,
+        artists = listOf(
+            MediaMetadata.Artist(
+                id = null,
+                name = subtitle ?: "Unknown Artist"
+            )
+        ),
+        duration = -1,
+        thumbnailUrl = thumbnailUrl,
+        album = null,
+        setVideoId = null,
+        explicit = false,
+        liked = false,
+        likedDate = null,
+        inLibrary = null
+    )
+}
+//
+//fun SearchHistory.toSongItem() = SongItem(
+//    id = videoId ?: "",
+//    title = title ?: query,
+//    artists = listOf(Artist(id = null, name = subtitle ?: "Unknown")),
+//    thumbnail = thumbnailUrl ?: "",
+//    album = null,
+//    duration = null
+//)
 
 fun Song.toMediaMetadata() =
     MediaMetadata(

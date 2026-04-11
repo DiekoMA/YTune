@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -30,6 +32,7 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
@@ -40,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalContext
@@ -48,6 +52,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -132,29 +138,22 @@ fun SettingsScreen(
         focusManager.clearFocus()
     }
 
-    val quickActions = buildQuickActions(navController, resetSearch)
-    val integrationActions = buildIntegrationActions(navController, resetSearch)
     val settingsGroups = buildSettingsGroups(navController, isAndroid12OrLater, hasUpdate, context, resetSearch)
     val internalItems = buildInternalItems(navController, resetSearch)
 
     val queryText = query.text.trim()
     val showSearchBar = isSearching || queryText.isNotBlank()
 
-    val filteredQuickActions = filterQuickActions(quickActions, queryText)
-    val filteredIntegrations = filterIntegrations(integrationActions, queryText)
     val filteredGroups = filterSettingsGroups(settingsGroups, queryText)
     val filteredInternalItems = filterInternalItems(internalItems, queryText)
 
     val hasSearchResults by remember(
-        filteredQuickActions,
         filteredGroups,
-        filteredIntegrations,
+        //filteredIntegrations,
         filteredInternalItems,
     ) {
         derivedStateOf {
-            filteredQuickActions.isNotEmpty() ||
-                filteredGroups.isNotEmpty() ||
-                filteredIntegrations.isNotEmpty() ||
+            filteredGroups.isNotEmpty() ||
                 filteredInternalItems.isNotEmpty()
         }
     }
@@ -174,8 +173,6 @@ fun SettingsScreen(
             accountEmail = accountEmail,
             accountImageUrl = if (isAccountLoggedIn) accountImageUrl else null,
         ),
-        quickActions = if (queryText.isBlank()) quickActions else filteredQuickActions,
-        integrations = if (queryText.isBlank()) integrationActions else filteredIntegrations,
         groups = if (queryText.isBlank()) settingsGroups else filteredGroups,
         internalGroup = if (queryText.isNotBlank()) internalGroup else null,
         showPermissionBanner = shouldShowPermissionHint,
@@ -201,23 +198,12 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             if (!showSearchBar) {
-                LargeFlexibleTopAppBar(
+                TopAppBar(
                     title = {
                         Text(
                             text = stringResource(R.string.settings),
                             fontWeight = FontWeight.Bold,
                         )
-                    },
-                    navigationIcon = {
-                        IconButton(
-                            onClick = navController::navigateUp,
-                            onLongClick = navController::backToMain,
-                        ) {
-                            Icon(
-                                painterResource(R.drawable.arrow_back),
-                                contentDescription = null,
-                            )
-                        }
                     },
                     actions = {
                         IconButton(

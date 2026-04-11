@@ -13,7 +13,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,6 +50,7 @@ import com.diekoma.ytune.viewmodels.OnlineSearchSuggestionViewModel
 import com.diekoma.ytune.R
 import kotlinx.coroutines.flow.drop
 import androidx.compose.ui.graphics.Color
+import com.diekoma.ytune.ui.component.RecentSearchCard
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -98,6 +101,50 @@ fun OnlineSearchScreen(
             .fillMaxSize()
             .background(if (pureBlack) Color.Black else MaterialTheme.colorScheme.background)
     ) {
+        item {
+            if (viewState.history.isNotEmpty()) {
+                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                    Text(
+                        text = "Recent searches",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        color = if (pureBlack) Color.White else MaterialTheme.colorScheme.onSurface
+                    )
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(2.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items (viewState.history.take(8)) { history ->
+                            RecentSearchCard(
+                                history = history,
+                                pureBlack = pureBlack,
+                                navController = navController,
+                                onClick = {
+                                    val metadata = history.toMediaMetadata()
+
+                                    if (metadata != null) {
+                                        playerConnection.playQueue(
+                                            YouTubeQueue(WatchEndpoint(videoId = metadata.id), metadata)
+                                        )
+                                    } else {
+                                        onSearch(history.query)
+                                    }
+                                    onDismiss()
+                                },
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        thickness = 0.5.dp,
+                        color = (if (pureBlack) Color.White else Color.Black).copy(alpha = 0.1f)
+                    )
+                }
+            }
+        }
         items(viewState.history, key = { "history_${it.query}" }) { history ->
             SuggestionItem(
                 query = history.query,

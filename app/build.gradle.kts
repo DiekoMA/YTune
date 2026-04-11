@@ -170,6 +170,7 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.util)
     implementation(libs.ui.unit)
+    implementation(libs.ui)
     compileOnly("androidx.compose.ui:ui-tooling-preview:${libs.versions.compose.get()}")
     debugImplementation("androidx.compose.ui:ui-tooling-preview:${libs.versions.compose.get()}")
     debugImplementation(libs.compose.ui.tooling)

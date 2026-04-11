@@ -56,6 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.diekoma.ytune.LocalDatabase
 import com.diekoma.ytune.innertube.YouTube.SearchFilter.Companion.FILTER_ALBUM
 import com.diekoma.ytune.innertube.YouTube.SearchFilter.Companion.FILTER_ARTIST
 import com.diekoma.ytune.innertube.YouTube.SearchFilter.Companion.FILTER_COMMUNITY_PLAYLIST
@@ -73,6 +74,7 @@ import com.diekoma.ytune.LocalPlayerConnection
 import com.diekoma.ytune.R
 import com.diekoma.ytune.constants.AppBarHeight
 import com.diekoma.ytune.constants.SearchFilterHeight
+import com.diekoma.ytune.db.entities.SearchHistory
 import com.diekoma.ytune.extensions.togglePlayPause
 import com.diekoma.ytune.models.toMediaMetadata
 import com.diekoma.ytune.playback.queues.YouTubeQueue
@@ -103,6 +105,7 @@ fun OnlineSearchResult(
 
     val coroutineScope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
+    val database = LocalDatabase.current
 
     val searchFilter by viewModel.filter.collectAsState()
     val searchSummary = viewModel.summaryPage
@@ -191,6 +194,19 @@ fun OnlineSearchResult(
                                             item.toMediaMetadata()
                                         )
                                     )
+
+                                    coroutineScope.launch {
+                                        database.query {
+                                            upsert(SearchHistory(
+                                                query = item.title,
+                                                videoId = item.id,
+                                                title = item.title,
+                                                subtitle = item.artists.joinToString { it.name },
+                                                thumbnailUrl = item.thumbnail,
+                                                timestamp = System.currentTimeMillis()
+                                            ))
+                                        }
+                                    }
                                 }
                             }
 

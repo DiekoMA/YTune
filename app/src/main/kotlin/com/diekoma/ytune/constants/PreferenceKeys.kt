@@ -149,6 +149,8 @@ val DisableScreenshotKey = booleanPreferencesKey("disableScreenshot")
 
 val DiscordTokenKey = stringPreferencesKey("discordToken")
 val DiscordInfoDismissedKey = booleanPreferencesKey("discordInfoDismissed")
+val DiscordStatusKey = stringPreferencesKey("discordStatusKey")
+val DiscordAvatarKey = stringPreferencesKey("discordAvatarKey")
 val DiscordUsernameKey = stringPreferencesKey("discordUsername")
 val DiscordNameKey = stringPreferencesKey("discordName")
 val EnableDiscordRPCKey = booleanPreferencesKey("discordRPCEnable")

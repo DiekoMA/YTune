@@ -679,7 +679,8 @@ class MainActivity : ComponentActivity() {
                             Screens.Search.route,
                             //Screens.MoodAndGenres.route,
                             Screens.Library.route,
-                            "settings",
+                            Screens.Settings.route
+//                            "settings",
                         )
 
                     val (query, onQueryChange) =
@@ -1247,19 +1248,6 @@ class MainActivity : ComponentActivity() {
                                                             painter = painterResource(R.drawable.new_release),
                                                             contentDescription = stringResource(R.string.new_release_albums)
                                                         )
-                                                    }
-                                                    IconButton(onClick = { navController.navigate("settings") }) {
-                                                        BadgedBox(badge = {
-                                                            if (!Updater.isSameVersion(latestVersionName, BuildConfig.VERSION_NAME)) {
-                                                                Badge()
-                                                            }
-                                                        }) {
-                                                            Icon(
-                                                                painter = painterResource(R.drawable.settings),
-                                                                contentDescription = stringResource(R.string.settings),
-                                                                modifier = Modifier.size(24.dp)
-                                                            )
-                                                        }
                                                     }
                                                 },
                                                 scrollBehavior = if (shouldUseFloatingTopBar) searchBarScrollBehavior else topAppBarScrollBehavior,

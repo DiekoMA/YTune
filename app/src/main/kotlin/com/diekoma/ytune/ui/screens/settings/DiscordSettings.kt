@@ -55,6 +55,8 @@ import com.my.kizzy.rpc.KizzyRPC
 import timber.log.Timber
 import kotlinx.coroutines.*
 import com.diekoma.ytune.R
+import com.diekoma.ytune.ui.component.Material3SettingsGroup
+import com.diekoma.ytune.ui.component.Material3SettingsItem
 import com.diekoma.ytune.utils.ArtworkStorage
 
 enum class ActivitySource { ARTIST, ALBUM, SONG, APP }
@@ -80,9 +82,11 @@ fun DiscordSettings(
     val snackbarHostState = remember { SnackbarHostState() }
 
     var discordToken by rememberPreference(DiscordTokenKey, "")
+    var discordAvatar by rememberPreference(DiscordAvatarKey, "")
     var discordUsername by rememberPreference(DiscordUsernameKey, "")
     var discordName by rememberPreference(DiscordNameKey, "")
     var infoDismissed by rememberPreference(DiscordInfoDismissedKey, false)
+    var discordStatus by rememberPreference(DiscordStatusKey, "online")
 
     LaunchedEffect(discordToken) {
         val token = discordToken
@@ -181,69 +185,210 @@ fun DiscordSettings(
             }
         }
 
-        Text(
-            text = stringResource(R.string.account),
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-        )
-
     var showLogoutConfirm by remember { mutableStateOf(false) }
 
-    PreferenceEntry(
-            title = {
-                Text(
-                    text = if (isLoggedIn) discordName else stringResource(R.string.not_logged_in),
-                    modifier = Modifier.alpha(if (isLoggedIn) 1f else 0.5f),
-                )
-            },
-            description = if (discordUsername.isNotEmpty()) "@$discordUsername" else null,
-            icon = { Icon(painterResource(R.drawable.discord), null) },
-            trailingContent = {
-                if (isLoggedIn) {
-                        OutlinedButton(onClick = { showLogoutConfirm = true }, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.action_logout)) }
-                    } else {
-                    OutlinedButton(onClick = {
-                        navController.navigate("settings/discord/login")
-                    }, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.action_login)) }
-                }
-            },
-        )
+            Card(
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+            ){
+                Row(
+                    modifier =
+                        Modifier
+                            .padding(
+                                start = 20.dp,
+                                end = 20.dp,
+                                top = 20.dp,
+                                bottom = if (isLoggedIn) 20.dp else 8.dp,
+                            ).fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(modifier = Modifier.size(56.dp)) {
+                        if (isLoggedIn && discordAvatar.isNotEmpty()) {
+                            AsyncImage(
+                                model = discordAvatar,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(CircleShape),
+                            )
+                        } else {
+                            Icon(
+                                painter = painterResource(R.drawable.discord),
+                                contentDescription = null,
+                                modifier =
+                                    Modifier
+                                        .size(36.dp)
+                                        .align(Alignment.Center)
+                                        .alpha(0.4f),
+                            )
+                        }
+                        if (isLoggedIn) {
+                            val statusColor =
+                                when (discordStatus) {
+                                    "idle" -> MaterialTheme.colorScheme.tertiary
+                                    "dnd" -> MaterialTheme.colorScheme.error
+                                    else -> MaterialTheme.colorScheme.primary
+                                }
+                            Surface(
+                                color = statusColor,
+                                shape = CircleShape,
+                                modifier =
+                                    Modifier
+                                        .size(16.dp)
+                                        .align(Alignment.BottomEnd)
+                                        .border(
+                                            2.dp,
+                                            MaterialTheme.colorScheme.surfaceContainerHigh,
+                                            CircleShape,
+                                        ),
+                                content = {},
+                            )
+                        }
+                    }
 
-            if (showLogoutConfirm) {
-                AlertDialog(
-                    onDismissRequest = { showLogoutConfirm = false },
-                    title = { Text(stringResource(R.string.logout_confirm_title)) },
-                    text = { Text(stringResource(R.string.logout_confirm_message)) },
-                    confirmButton = {
-                        TextButton(onClick = {
+                    Spacer(Modifier.width(16.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text =
+                                if (isLoggedIn) {
+                                    discordName
+                                } else {
+                                    stringResource(R.string.not_logged_in)
+                                },
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.alpha(if (isLoggedIn) 1f else 0.5f),
+                        )
+                        if (discordUsername.isNotEmpty()) {
+                            Text(
+                                text = "@$discordUsername",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        if (!isLoggedIn) {
+                            Text(
+                                text = stringResource(R.string.discord_connect_description),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+
+                    if (isLoggedIn) {
+                        OutlinedButton(onClick = {
                             discordName = ""
                             discordToken = ""
                             discordUsername = ""
-                            showLogoutConfirm = false
-                        }, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.logout_confirm_yes)) }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showLogoutConfirm = false }, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.logout_confirm_no)) }
+                            discordAvatar = ""
+                        }) {
+                            Text(stringResource(R.string.action_logout))
+                        }
                     }
-                )
+
+                    if(!isLoggedIn) {
+                        Row(
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 20.dp, end = 20.dp, bottom = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            OutlinedButton(
+                                onClick = { navController.navigate("settings/discord/login") },
+                            ) {
+                                Text(stringResource(R.string.action_login))
+                            }
+                            OutlinedButton(
+                                onClick = {  },
+                            ) {
+                                Icon(
+                                    painterResource(R.drawable.token),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                                Spacer(Modifier.width(6.dp))
+                                Text(stringResource(R.string.advanced_login))
+                            }
+                        }
+                    }
+                }
             }
 
-        Text(
-            text = stringResource(R.string.options),
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        )
+            Material3SettingsGroup(
+                title = stringResource(R.string.options),
+                items =
+                    listOf(
+                        Material3SettingsItem(
+                            title = { Text(stringResource(R.string.enable_discord_rpc)) },
+                            trailingContent = {
+                                Switch(
+                                    checked = discordRPC,
+                                    onCheckedChange = onDiscordRPCChange,
+                                    enabled = isLoggedIn,
+                                    thumbContent = {
+                                        Icon(
+                                            painter = painterResource(
+                                                id = if (discordRPC) R.drawable.check else R.drawable.close
+                                            ),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(SwitchDefaults.IconSize),
+                                        )
+                                    }
+                                )
+                            },
+                            isHighlighted = isLoggedIn,
+                            onClick = { if (isLoggedIn) onDiscordRPCChange(!discordRPC) },
+                        )
+                    )
+            )
+//    PreferenceEntry(
+//            title = {
+//                Text(
+//                    text =  discordName else stringResource(R.string.not_logged_in),
+//                    modifier = Modifier.alpha(if (isLoggedIn) 1f else 0.5f),
+//                )
+//            },
+//            description = if (discordUsername.isNotEmpty()) "@$discordUsername" else null,
+//            icon = { Icon(painterResource(R.drawable.discord), null) },
+//            trailingContent = {
+//                if (isLoggedIn) {
+//                        OutlinedButton(onClick = { showLogoutConfirm = true }, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.action_logout)) }
+//                    } else {
+//                    OutlinedButton(onClick = {
+//                        navController.navigate("settings/discord/login")
+//                    }, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.action_login)) }
+//                }
+//            },
+//        )
+//
+//            if (showLogoutConfirm) {
+//                AlertDialog(
+//                    onDismissRequest = { showLogoutConfirm = false },
+//                    title = { Text(stringResource(R.string.logout_confirm_title)) },
+//                    text = { Text(stringResource(R.string.logout_confirm_message)) },
+//                    confirmButton = {
+//                        TextButton(onClick = {
+//                            discordName = ""
+//                            discordToken = ""
+//                            discordUsername = ""
+//                            showLogoutConfirm = false
+//                        }, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.logout_confirm_yes)) }
+//                    },
+//                    dismissButton = {
+//                        TextButton(onClick = { showLogoutConfirm = false }, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.logout_confirm_no)) }
+//                    }
+//                )
+//            }
 
-        SwitchPreference(
-            title = { Text(stringResource(R.string.enable_discord_rpc)) },
-            checked = discordRPC,
-            onCheckedChange = onDiscordRPCChange,
-            isEnabled = isLoggedIn,
-        )
+
+
 
         // Add a refresh action to manually re-update Discord RPC
         // PreferenceEntry(
@@ -371,6 +516,7 @@ fun DiscordSettings(
                     .pointerInput(Unit) { detectTapGestures { activityStatusExpanded = true } },
                 leadingIcon = { Icon(painterResource(R.drawable.status), null) }
             )
+
             ExposedDropdownMenu(expanded = activityStatusExpanded, onDismissRequest = { activityStatusExpanded = false }) {
                 activityStatus.forEach { opt ->
                     val display = when (opt) {
@@ -955,7 +1101,7 @@ fun RichPresence(
    val (button1Label) = rememberPreference(DiscordActivityButton1LabelKey, "Listen on YouTube Music")
    val (button1Enabled) = rememberPreference(DiscordActivityButton1EnabledKey, true)
 
-   val (button2Label) = rememberPreference(DiscordActivityButton2LabelKey, "Go to ArchiveTune")
+   val (button2Label) = rememberPreference(DiscordActivityButton2LabelKey, "Go to YTune")
    val (button2Enabled) = rememberPreference(DiscordActivityButton2EnabledKey, true)
 
 // Button URL sources + custom
@@ -963,7 +1109,7 @@ fun RichPresence(
    val (button1CustomUrl) = rememberPreference(DiscordActivityButton1CustomUrlKey, "")
 
    val (button2UrlSource) = rememberPreference(DiscordActivityButton2UrlSourceKey, "custom")
-   val (button2CustomUrl) = rememberPreference(DiscordActivityButton2CustomUrlKey, "https://github.com/koiverse/ArchiveTune")
+   val (button2CustomUrl) = rememberPreference(DiscordActivityButton2CustomUrlKey, "https://github.com/koiverse/YTune")
 
 // Large text source + custom
    val (largeTextSource) = rememberPreference(DiscordLargeTextSourceKey, "album")
@@ -980,6 +1126,7 @@ fun RichPresence(
     }
     val resolvedButton1Url = resolveUrl(button1UrlSource, song, button1CustomUrl)
     val resolvedButton2Url = resolveUrl(button2UrlSource, song, button2CustomUrl)
+
     val activityVerb = when (activityType.uppercase()) {
     "PLAYING" -> "Playing"
     "LISTENING" -> "Listening to"

@@ -22,64 +22,6 @@ import com.diekoma.ytune.BuildConfig
 import com.diekoma.ytune.R
 
 @Composable
-fun buildQuickActions(
-    navController: NavController,
-    resetSearch: () -> Unit,
-): List<SettingsQuickAction> =
-    listOf(
-        SettingsQuickAction(
-            icon = painterResource(R.drawable.palette),
-            label = stringResource(R.string.appearance),
-            onClick = { resetSearch(); navController.navigate("settings/appearance") },
-            accentColor = MaterialTheme.colorScheme.primary,
-        ),
-        SettingsQuickAction(
-            icon = painterResource(R.drawable.play),
-            label = stringResource(R.string.player_and_audio),
-            onClick = { resetSearch(); navController.navigate("settings/player") },
-            accentColor = MaterialTheme.colorScheme.tertiary,
-        ),
-        SettingsQuickAction(
-            icon = painterResource(R.drawable.storage),
-            label = stringResource(R.string.storage),
-            onClick = { resetSearch(); navController.navigate("settings/storage") },
-            accentColor = MaterialTheme.colorScheme.secondary,
-        ),
-        SettingsQuickAction(
-            icon = painterResource(R.drawable.security),
-            label = stringResource(R.string.privacy),
-            onClick = { resetSearch(); navController.navigate("settings/privacy") },
-            accentColor = MaterialTheme.colorScheme.error,
-        ),
-    )
-
-@Composable
-fun buildIntegrationActions(
-    navController: NavController,
-    resetSearch: () -> Unit,
-): List<SettingsIntegrationAction> =
-    listOf(
-        SettingsIntegrationAction(
-            icon = painterResource(R.drawable.discord),
-            label = stringResource(R.string.discord),
-            onClick = { resetSearch(); navController.navigate("settings/discord") },
-            accentColor = Color(0xFF5865F2),
-        ),
-        SettingsIntegrationAction(
-            icon = painterResource(R.drawable.integration),
-            label = stringResource(R.string.integration),
-            onClick = { resetSearch(); navController.navigate("settings/integration") },
-            accentColor = MaterialTheme.colorScheme.secondary,
-        ),
-        SettingsIntegrationAction(
-            icon = painterResource(R.drawable.fire),
-            label = stringResource(R.string.music_together),
-            onClick = { resetSearch(); navController.navigate("settings/music_together") },
-            accentColor = MaterialTheme.colorScheme.tertiary,
-        ),
-    )
-
-@Composable
 fun buildSettingsGroups(
     navController: NavController,
     isAndroid12OrLater: Boolean,
@@ -88,6 +30,21 @@ fun buildSettingsGroups(
     resetSearch: () -> Unit,
 ): List<SettingsGroup> =
     buildList {
+        add(
+            SettingsGroup(
+                title = stringResource(R.string.general),
+                items = listOf(
+                    SettingsItem(
+                        icon = painterResource(R.drawable.integration),
+                        title = stringResource(R.string.integrations),
+                        subtitle = stringResource(R.string.integrations),
+                        accentColor = MaterialTheme.colorScheme.primary,
+                        keywords = listOf("discord", "lastfm", "listenbrainz", "integration"),
+                        onClick = { resetSearch(); navController.navigate("settings/integration") },
+                    )
+                )
+            )
+        )
         add(
             SettingsGroup(
                 title = stringResource(R.string.settings_section_ui),
@@ -254,7 +211,7 @@ fun buildSettingsGroups(
                         SettingsItem(
                             icon = painterResource(R.drawable.info),
                             title = stringResource(R.string.about),
-                            subtitle = "ArchiveTune",
+                            subtitle = "YTune",
                             accentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                             keywords = listOf("about", "app info", "license", "contributors"),
                             onClick = { resetSearch(); navController.navigate("settings/about") },

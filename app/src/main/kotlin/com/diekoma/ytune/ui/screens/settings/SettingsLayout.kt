@@ -65,8 +65,6 @@ fun resolveLayoutMode(): SettingsLayoutMode {
 
 data class SettingsContentState(
     val profileHeader: SettingsProfileState,
-    val quickActions: List<SettingsQuickAction>,
-    val integrations: List<SettingsIntegrationAction>,
     val groups: List<SettingsGroup>,
     val internalGroup: SettingsGroup?,
     val showPermissionBanner: Boolean,
@@ -90,8 +88,6 @@ fun AdaptiveSettingsLayout(
 
     var heroVisible by remember { mutableStateOf(false) }
     var bannerVisible by remember { mutableStateOf(false) }
-    var quickActionsVisible by remember { mutableStateOf(false) }
-    var integrationsVisible by remember { mutableStateOf(false) }
     var categoriesVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -101,10 +97,6 @@ fun AdaptiveSettingsLayout(
         anim.animateTo(1f, tween(60))
         bannerVisible = true
         anim.animateTo(1f, tween(60))
-        quickActionsVisible = true
-        anim.animateTo(1f, tween(70))
-        integrationsVisible = true
-        anim.animateTo(1f, tween(70))
         categoriesVisible = true
     }
 
@@ -119,11 +111,8 @@ fun AdaptiveSettingsLayout(
             CompactSettingsLayout(
                 state = state,
                 listState = listState,
-                quickActionColumns = quickActionColumns,
                 heroVisible = heroVisible,
                 bannerVisible = bannerVisible,
-                quickActionsVisible = quickActionsVisible,
-                integrationsVisible = integrationsVisible,
                 categoriesVisible = categoriesVisible,
                 topPadding = topPadding,
                 modifier = modifier,
@@ -132,11 +121,8 @@ fun AdaptiveSettingsLayout(
         SettingsLayoutMode.MEDIUM -> {
             MediumSettingsLayout(
                 state = state,
-                quickActionColumns = quickActionColumns,
                 heroVisible = heroVisible,
                 bannerVisible = bannerVisible,
-                quickActionsVisible = quickActionsVisible,
-                integrationsVisible = integrationsVisible,
                 categoriesVisible = categoriesVisible,
                 topPadding = topPadding,
                 modifier = modifier,
@@ -145,11 +131,8 @@ fun AdaptiveSettingsLayout(
         SettingsLayoutMode.EXPANDED -> {
             ExpandedSettingsLayout(
                 state = state,
-                quickActionColumns = quickActionColumns,
                 heroVisible = heroVisible,
                 bannerVisible = bannerVisible,
-                quickActionsVisible = quickActionsVisible,
-                integrationsVisible = integrationsVisible,
                 categoriesVisible = categoriesVisible,
                 topPadding = topPadding,
                 modifier = modifier,
@@ -162,11 +145,8 @@ fun AdaptiveSettingsLayout(
 private fun CompactSettingsLayout(
     state: SettingsContentState,
     listState: LazyListState,
-    quickActionColumns: Int,
     heroVisible: Boolean,
     bannerVisible: Boolean,
-    quickActionsVisible: Boolean,
-    integrationsVisible: Boolean,
     categoriesVisible: Boolean,
     topPadding: Dp,
     modifier: Modifier = Modifier,
@@ -239,47 +219,6 @@ private fun CompactSettingsLayout(
             }
         }
 
-        if (state.quickActions.isNotEmpty()) {
-            item(key = "quickActions") {
-                AnimatedVisibility(
-                    visible = quickActionsVisible,
-                    enter = fadeIn(SettingsAnimations.entranceSpring()) +
-                        slideInVertically(
-                            initialOffsetY = { it / 6 },
-                            animationSpec = SettingsAnimations.entranceSpring(),
-                        ),
-                ) {
-                    SettingsQuickActionsSection(
-                        actions = state.quickActions,
-                        columns = quickActionColumns,
-                        modifier = Modifier
-                            .padding(horizontal = pad)
-                            .padding(bottom = spacing),
-                    )
-                }
-            }
-        }
-
-        if (state.integrations.isNotEmpty()) {
-            item(key = "integrations") {
-                AnimatedVisibility(
-                    visible = integrationsVisible,
-                    enter = fadeIn(SettingsAnimations.entranceSpring()) +
-                        slideInVertically(
-                            initialOffsetY = { it / 6 },
-                            animationSpec = SettingsAnimations.entranceSpring(),
-                        ),
-                ) {
-                    SettingsIntegrationsSection(
-                        integrations = state.integrations,
-                        modifier = Modifier
-                            .padding(horizontal = pad)
-                            .padding(bottom = spacing),
-                    )
-                }
-            }
-        }
-
         if (state.isSearchActive && !state.hasSearchResults) {
             item(key = "empty") {
                 Spacer(modifier = Modifier.height(24.dp))
@@ -334,11 +273,8 @@ private fun CompactSettingsLayout(
 @Composable
 private fun MediumSettingsLayout(
     state: SettingsContentState,
-    quickActionColumns: Int,
     heroVisible: Boolean,
     bannerVisible: Boolean,
-    quickActionsVisible: Boolean,
-    integrationsVisible: Boolean,
     categoriesVisible: Boolean,
     topPadding: Dp,
     modifier: Modifier = Modifier,
@@ -407,34 +343,34 @@ private fun MediumSettingsLayout(
                 }
             }
 
-            if (state.quickActions.isNotEmpty()) {
-                item(key = "quickActions") {
-                    AnimatedVisibility(
-                        visible = quickActionsVisible,
-                        enter = fadeIn(SettingsAnimations.entranceSpring()),
-                    ) {
-                        SettingsQuickActionsSection(
-                            actions = state.quickActions,
-                            columns = 2,
-                            modifier = Modifier.padding(bottom = spacing),
-                        )
-                    }
-                }
-            }
+//            if (state.quickActions.isNotEmpty()) {
+//                item(key = "quickActions") {
+//                    AnimatedVisibility(
+//                        visible = quickActionsVisible,
+//                        enter = fadeIn(SettingsAnimations.entranceSpring()),
+//                    ) {
+//                        SettingsQuickActionsSection(
+//                            actions = state.quickActions,
+//                            columns = 2,
+//                            modifier = Modifier.padding(bottom = spacing),
+//                        )
+//                    }
+//                }
+//            }
 
-            if (state.integrations.isNotEmpty()) {
-                item(key = "integrations") {
-                    AnimatedVisibility(
-                        visible = integrationsVisible,
-                        enter = fadeIn(SettingsAnimations.entranceSpring()),
-                    ) {
-                        SettingsIntegrationsSection(
-                            integrations = state.integrations,
-                            modifier = Modifier.padding(bottom = spacing),
-                        )
-                    }
-                }
-            }
+//            if (state.integrations.isNotEmpty()) {
+//                item(key = "integrations") {
+//                    AnimatedVisibility(
+//                        visible = integrationsVisible,
+//                        enter = fadeIn(SettingsAnimations.entranceSpring()),
+//                    ) {
+//                        SettingsIntegrationsSection(
+//                            integrations = state.integrations,
+//                            modifier = Modifier.padding(bottom = spacing),
+//                        )
+//                    }
+//                }
+//            }
         }
 
         LazyColumn(
@@ -491,11 +427,8 @@ private fun MediumSettingsLayout(
 @Composable
 private fun ExpandedSettingsLayout(
     state: SettingsContentState,
-    quickActionColumns: Int,
     heroVisible: Boolean,
     bannerVisible: Boolean,
-    quickActionsVisible: Boolean,
-    integrationsVisible: Boolean,
     categoriesVisible: Boolean,
     topPadding: Dp,
     modifier: Modifier = Modifier,
@@ -564,34 +497,34 @@ private fun ExpandedSettingsLayout(
                 }
             }
 
-            if (state.quickActions.isNotEmpty()) {
-                item(key = "quickActions") {
-                    AnimatedVisibility(
-                        visible = quickActionsVisible,
-                        enter = fadeIn(SettingsAnimations.entranceSpring()),
-                    ) {
-                        SettingsQuickActionsSection(
-                            actions = state.quickActions,
-                            columns = 2,
-                            modifier = Modifier.padding(bottom = spacing),
-                        )
-                    }
-                }
-            }
+//            if (state.quickActions.isNotEmpty()) {
+//                item(key = "quickActions") {
+//                    AnimatedVisibility(
+//                        visible = quickActionsVisible,
+//                        enter = fadeIn(SettingsAnimations.entranceSpring()),
+//                    ) {
+//                        SettingsQuickActionsSection(
+//                            actions = state.quickActions,
+//                            columns = 2,
+//                            modifier = Modifier.padding(bottom = spacing),
+//                        )
+//                    }
+//                }
+//            }
 
-            if (state.integrations.isNotEmpty()) {
-                item(key = "integrations") {
-                    AnimatedVisibility(
-                        visible = integrationsVisible,
-                        enter = fadeIn(SettingsAnimations.entranceSpring()),
-                    ) {
-                        SettingsIntegrationsSection(
-                            integrations = state.integrations,
-                            modifier = Modifier.padding(bottom = spacing),
-                        )
-                    }
-                }
-            }
+//            if (state.integrations.isNotEmpty()) {
+//                item(key = "integrations") {
+//                    AnimatedVisibility(
+//                        visible = integrationsVisible,
+//                        enter = fadeIn(SettingsAnimations.entranceSpring()),
+//                    ) {
+//                        SettingsIntegrationsSection(
+//                            integrations = state.integrations,
+//                            modifier = Modifier.padding(bottom = spacing),
+//                        )
+//                    }
+//                }
+//            }
         }
 
         LazyColumn(

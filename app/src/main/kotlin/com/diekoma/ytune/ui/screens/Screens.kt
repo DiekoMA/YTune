@@ -41,14 +41,14 @@ sealed class Screens(
         route = "library"
     )
 
-//    object MoodAndGenres : Screens(
-//        titleId = R.string.mood_and_genres,
-//        iconIdInactive = R.drawable.style,
-//        iconIdActive = R.drawable.style,
-//        route = "mood_and_genres"
-//    )
+    object Settings : Screens(
+        titleId = R.string.settings,
+        iconIdInactive = R.drawable.settings,
+        iconIdActive = R.drawable.settings,
+        route = "settings"
+    )
 
     companion object {
-        val MainScreens = listOf(Home, Search,  Library)
+        val MainScreens = listOf(Home, Search, Library, Settings)
     }
 }

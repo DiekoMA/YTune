@@ -157,8 +157,6 @@ fun AccountSettings(
 
     val accountLabel = stringResource(R.string.account)
     val generalLabel = stringResource(R.string.general)
-    val integrationLabel = stringResource(R.string.integration)
-    val miscLabel = stringResource(R.string.misc)
     val loginLabel = stringResource(R.string.login)
     val notLoggedInLabel = stringResource(R.string.not_logged_in)
     val tokenDescription = stringResource(R.string.token_adv_login_description)
@@ -343,24 +341,6 @@ fun AccountSettings(
             }
 
             item {
-                QuickAccessGrid(
-                    isLoggedIn = isLoggedIn,
-                    onPlaylistClick = { showPlaylistDialog = true },
-                    onIntegrationClick = { navController.navigate("settings/integration") },
-                    onMusicTogetherClick = { navController.navigate("settings/music_together") },
-                    onTokenClick = {
-                        if (!isLoggedIn) {
-                            showTokenEditor = true
-                        } else if (!showToken) {
-                            showToken = true
-                        } else {
-                            showTokenEditor = true
-                        }
-                    },
-                )
-            }
-
-            item {
                 AnimatedVisibility(
                     visible = showToken && hasVisibleSecureDetails(
                         innerTubeCookie = innerTubeCookie,
@@ -408,54 +388,33 @@ fun AccountSettings(
                             checked = ytmSync,
                             onCheckedChange = onYtmSyncChange,
                         )
+
+                        ExpressiveDivider()
+
+                        ExpressiveActionRow(
+                            icon = painterResource(R.drawable.playlist_add),
+                            title = stringResource(R.string.select_playlist_to_sync),
+                            onClick = { showPlaylistDialog = true },
+                        )
+
+                        ExpressiveDivider()
+
+                        ExpressiveActionRow(
+                            icon = painterResource(R.drawable.token),
+                            title = tokenActionTitle,
+                            subtitle = tokenDescription,
+                            accent = if (isLoggedIn && showToken) MaterialTheme.colorScheme.tertiary else null,
+                            onClick = {
+                                if (!isLoggedIn) {
+                                    showTokenEditor = true
+                                } else if (!showToken) {
+                                    showToken = true
+                                } else {
+                                    showTokenEditor = true
+                                }
+                            },
+                        )
                     }
-                }
-            }
-
-            item {
-                ExpressiveSectionCard(title = integrationLabel) {
-                    ExpressiveActionRow(
-                        icon = painterResource(R.drawable.playlist_add),
-                        title = stringResource(R.string.select_playlist_to_sync),
-                        onClick = { showPlaylistDialog = true },
-                    )
-
-                    ExpressiveDivider()
-
-                    ExpressiveActionRow(
-                        icon = painterResource(R.drawable.integration),
-                        title = integrationLabel,
-                        subtitle = "Discord, Last.fm, ListenBrainz",
-                        onClick = { navController.navigate("settings/integration") },
-                    )
-
-                    ExpressiveDivider()
-
-                    ExpressiveActionRow(
-                        icon = painterResource(R.drawable.fire),
-                        title = stringResource(R.string.music_together),
-                        onClick = { navController.navigate("settings/music_together") },
-                    )
-                }
-            }
-
-            item {
-                ExpressiveSectionCard(title = miscLabel) {
-                    ExpressiveActionRow(
-                        icon = painterResource(R.drawable.token),
-                        title = tokenActionTitle,
-                        subtitle = tokenDescription,
-                        accent = if (isLoggedIn && showToken) MaterialTheme.colorScheme.tertiary else null,
-                        onClick = {
-                            if (!isLoggedIn) {
-                                showTokenEditor = true
-                            } else if (!showToken) {
-                                showToken = true
-                            } else {
-                                showTokenEditor = true
-                            }
-                        },
-                    )
                 }
             }
 

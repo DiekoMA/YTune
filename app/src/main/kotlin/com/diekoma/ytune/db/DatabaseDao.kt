@@ -576,6 +576,9 @@ interface DatabaseDao {
     @Query("SELECT count from playCount WHERE song = :songId AND year = :year AND month = :month")
     fun getPlayCountByMonth(songId: String?, year: Int, month: Int): Flow<Int>
 
+    @Query("SELECT * FROM search_history ORDER BY timestamp DESC LIMIT 15")
+    fun getRecentHistory(): Flow<List<SearchHistory>>
+
     @Transaction
     @Query(
         """
@@ -1542,6 +1545,9 @@ interface DatabaseDao {
 
     @Upsert
     fun upsert(song: SongEntity)
+
+    @Upsert
+    fun upsert(history: SearchHistory)
 
     @Delete
     fun delete(song: SongEntity)

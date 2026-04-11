@@ -40,6 +40,7 @@ extractor = "2d2d9ed"
 rhino = "1.9.1"
 multiplatformMarkdown = "0.39.2"
 uiUnit = "1.10.6"
+ui = "1.10.6"
 
 [libraries]
 annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
@@ -128,6 +129,7 @@ anyascii = { module = "com.anyascii:anyascii", version.ref = "anyascii" }
 
 multiplatform-markdown = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "multiplatformMarkdown" }
 ui-unit = { group = "androidx.compose.ui", name = "ui-unit", version.ref = "uiUnit" }
+ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
 
 
 [plugins]
