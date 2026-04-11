@@ -313,7 +313,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          UNIVERSAL_APK=$(find downloaded_artifacts/YTune -name "*.apk")
+          UNIVERSAL_APK=$(find downloaded_artifacts/YTune -name "*.apk" | head -n 1)
           ABI_APKS=$(find downloaded_artifacts -path "*/app-*-release/*.apk")
 
           echo '${{ steps.build_changelog.outputs.changelog }}' | cut -c1-100000 > release_notes.md
