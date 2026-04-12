@@ -1,5 +1,5 @@
 /*
- * ArchiveTune Project Original (2026)
+ * YTune Project Original (2026)
  * Kòi Natsuko (github.com/koiverse)
  * Licensed Under GPL-3.0 | see git history for contributors
  */
@@ -102,7 +102,7 @@ fun UpdateScreen(
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
     val coroutineScope = rememberCoroutineScope()
-    val nightlyInstallUrl = "https://nightly.link/koiverse/ArchiveTune/workflows/build/dev/app-universal-release"
+    val nightlyInstallUrl = "https://nightly.link/koiverse/YTune/workflows/build/dev/app-universal-release"
 
     val (enableUpdateNotification, onEnableUpdateNotificationChange) = rememberPreference(
         EnableUpdateNotificationKey,
@@ -152,7 +152,7 @@ fun UpdateScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "ArchiveTune provides two download channels for builds:",
+                        text = "YTune provides two download channels for builds:",
                         style = MaterialTheme.typography.bodyMedium
                     )
 
@@ -231,7 +231,7 @@ fun UpdateScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "ArchiveTune provides two download channels for builds:",
+                        text = "YTune provides two download channels for builds:",
                         style = MaterialTheme.typography.bodyMedium
                     )
 
