@@ -271,6 +271,7 @@ jobs:
         shell: bash
         run: |
           LAST_TAG="$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || true)"
+          
           if [ -n "$LAST_TAG" ]; then
             FROM_REF="$LAST_TAG"
           else
@@ -319,6 +320,7 @@ jobs:
           
           gh release create "v${{ needs.check-version.outputs.new_version }}" \
             --title "${{ needs.check-version.outputs.new_version }}" \
+            --notes "${{ steps.custom_changelog.outputs.changelog }}" \
             "$UNIVERSAL_APK" \
-            "$ABI_APKS"
+            "${ABI_APKS[@]}"
             
