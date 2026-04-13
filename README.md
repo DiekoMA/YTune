@@ -135,6 +135,9 @@
 
 ---
 
+## Important 
+This fork makes some changes users may not agree with or might like(depends on the person) but it's made to be more in line with the actual YouTube music app in terms of functionality not exactly design 
+
 ## 📥 Download Now
 
 <div align="center">
@@ -166,8 +169,8 @@
     </tr>
     <tr>
       <td align="center" colspan="2">
-        <a href="https://github.com/koiverse/YTune/releases/latest">
-          <img src="https://raw.githubusercontent.com/koiverse/YTune/refs/heads/main/assets/badge_github.png" height="50" alt="Get YTune on GitHub">
+        <a href="https://github.com/koiverse/ArchiveTune/releases/latest">
+          <img src="https://raw.githubusercontent.com/koiverse/ArchiveTune/refs/heads/main/assets/badge_github.png" height="50" alt="Get YTune on GitHub">
         </a>
       </td>
     </tr>
