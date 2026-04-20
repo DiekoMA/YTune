@@ -214,6 +214,16 @@ constructor(
     }
 
     fun sync() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _isRefreshing.value = true
+            try {
+                syncUtils.syncArtistsSubscriptions()
+            } catch (e: Exception) {
+                reportException(e)
+            } finally {
+                _isRefreshing.value = false
+            }
+        }
         refresh(ArtistFilter.LIKED)
     }
 
@@ -377,9 +387,14 @@ constructor(
     fun sync() {
         viewModelScope.launch(Dispatchers.IO) {
             _isRefreshing.value = true
-            syncUtils.syncSavedPlaylists()
-            syncUtils.syncAutoSyncPlaylists()
-            _isRefreshing.value = false
+            try {
+                syncUtils.syncSavedPlaylists()
+                syncUtils.syncAutoSyncPlaylists()
+            } catch (e: Exception) {
+                reportException(e)
+            } finally {
+                _isRefreshing.value = false
+            }
         }
     }
 

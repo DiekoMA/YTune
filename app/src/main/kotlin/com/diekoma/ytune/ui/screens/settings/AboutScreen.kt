@@ -305,7 +305,7 @@ fun AboutScreen(
         position = "I like trains...",
         profileUrl = "https://github.com/DiekoMA",
         github = "https://github.com/DiekoMA",
-        website = null,
+        website = "https://ko-fi.com/diekoma",
         discord = "https://discord.com/users/350251280616128515"
     )
 

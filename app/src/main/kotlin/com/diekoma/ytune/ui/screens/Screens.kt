@@ -31,7 +31,7 @@ sealed class Screens(
         titleId = R.string.search,
         iconIdInactive = R.drawable.search,
         iconIdActive = R.drawable.search,
-        route = "search"
+        route = "search/"
     )
 
     object Library : Screens(

@@ -19,6 +19,7 @@ import com.diekoma.ytune.constants.HideExplicitKey
 import com.diekoma.ytune.constants.HideVideoKey
 import com.diekoma.ytune.db.MusicDatabase
 import com.diekoma.ytune.db.entities.SearchHistory
+import com.diekoma.ytune.innertube.models.SongItem
 import com.diekoma.ytune.utils.dataStore
 import com.diekoma.ytune.utils.get
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,7 +38,7 @@ class OnlineSearchSuggestionViewModel
 @Inject
 constructor(
     @ApplicationContext val context: Context,
-    database: MusicDatabase,
+    private val database: MusicDatabase,
 ) : ViewModel() {
     val query = MutableStateFlow("")
     private val _viewState = MutableStateFlow(SearchSuggestionViewState())
@@ -82,6 +83,22 @@ constructor(
                 }.collect {
                     _viewState.value = it
                 }
+        }
+    }
+
+    fun saveSearchHistory(item: SongItem) {
+        viewModelScope.launch {
+            database.query {
+                upsert(
+                    SearchHistory(
+                        query = item.title,
+                        videoId = item.id,
+                        title = item.title,
+                        subtitle = item.artists.joinToString { it.name },
+                        thumbnailUrl = item.thumbnail,
+                    )
+                )
+            }
         }
     }
 }

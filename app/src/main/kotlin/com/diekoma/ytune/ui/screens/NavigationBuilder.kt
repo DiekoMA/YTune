@@ -82,9 +82,6 @@ fun NavGraphBuilder.navigationBuilder(
     composable(MusicRecognitionRoute) {
         MusicRecognitionScreen(navController)
     }
-//    composable(Screens.MoodAndGenres.route) {
-//        MoodAndGenresScreen(navController)
-//    }
     composable("account") {
         AccountScreen(navController, scrollBehavior)
     }

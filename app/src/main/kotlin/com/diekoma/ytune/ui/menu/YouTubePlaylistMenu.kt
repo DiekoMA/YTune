@@ -314,46 +314,52 @@ fun YouTubePlaylistMenu(
             },
         ) {
             item {
-                ListItem(
-                    headlineContent = { Text(text = stringResource(R.string.already_in_playlist)) },
-                    leadingContent = {
-                        Image(
-                            painter = painterResource(R.drawable.close),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground),
-                            modifier = Modifier.size(ListThumbnailSize),
-                        )
-                    },
-                    modifier = Modifier.clickable { showErrorPlaylistAddDialog = false },
-                )
+                MenuSurfaceSection(modifier = Modifier.padding(vertical = 6.dp)) {
+                    ListItem(
+                        headlineContent = { Text(text = stringResource(R.string.already_in_playlist)) },
+                        leadingContent = {
+                            Image(
+                                painter = painterResource(R.drawable.close),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground),
+                                modifier = Modifier.size(ListThumbnailSize),
+                            )
+                        },
+                        modifier = Modifier.clickable { showErrorPlaylistAddDialog = false },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    )
+                }
             }
 
             items(notAddedList) { song ->
-                ListItem(
-                    headlineContent = { Text(text = song.title) },
-                    leadingContent = {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.size(ListThumbnailSize),
-                        ) {
-                            AsyncImage(
-                                model = song.thumbnailUrl,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clip(RoundedCornerShape(ThumbnailCornerRadius)),
+                MenuSurfaceSection(modifier = Modifier.padding(vertical = 6.dp)) {
+                    ListItem(
+                        headlineContent = { Text(text = song.title) },
+                        leadingContent = {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.size(ListThumbnailSize),
+                            ) {
+                                AsyncImage(
+                                    model = song.thumbnailUrl,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(ThumbnailCornerRadius)),
+                                )
+                            }
+                        },
+                        supportingContent = {
+                            Text(
+                                text = joinByBullet(
+                                    song.artists.joinToString { it.name },
+                                    makeTimeString(song.duration * 1000L),
+                                )
                             )
-                        }
-                    },
-                    supportingContent = {
-                        Text(
-                            text = joinByBullet(
-                                song.artists.joinToString { it.name },
-                                makeTimeString(song.duration * 1000L),
-                            )
-                        )
-                    },
-                )
+                        },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    )
+                }
             }
         }
     }

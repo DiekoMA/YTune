@@ -50,7 +50,7 @@ import com.diekoma.ytune.viewmodels.OnlineSearchSuggestionViewModel
 import com.diekoma.ytune.R
 import kotlinx.coroutines.flow.drop
 import androidx.compose.ui.graphics.Color
-import com.diekoma.ytune.ui.component.RecentSearchCard
+import com.diekoma.ytune.ui.component.RecentlyPlayedCard
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -79,6 +79,7 @@ fun OnlineSearchScreen(
 
     val lazyListState = rememberLazyListState()
 
+
     LaunchedEffect(Unit) {
         snapshotFlow { lazyListState.firstVisibleItemScrollOffset }
             .drop(1)
@@ -102,7 +103,8 @@ fun OnlineSearchScreen(
             .background(if (pureBlack) Color.Black else MaterialTheme.colorScheme.background)
     ) {
         item {
-            if (viewState.history.isNotEmpty()) {
+            val playedItems = viewState.history.filter { it.toMediaMetadata() != null }
+            if (playedItems.isNotEmpty() ) {
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
                     Text(
                         text = "Recent searches",
@@ -116,8 +118,9 @@ fun OnlineSearchScreen(
                         horizontalArrangement = Arrangement.spacedBy(2.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        items (viewState.history.take(8)) { history ->
-                            RecentSearchCard(
+
+                        items (playedItems.take(8)) { history ->
+                            RecentlyPlayedCard(
                                 history = history,
                                 pureBlack = pureBlack,
                                 navController = navController,
@@ -145,7 +148,8 @@ fun OnlineSearchScreen(
                 }
             }
         }
-        items(viewState.history, key = { "history_${it.query}" }) { history ->
+        items(viewState.history.filter { it.toMediaMetadata() == null },
+            key = { "history_${it.query}" }) { history ->
             SuggestionItem(
                 query = history.query,
                 online = false,
@@ -270,6 +274,7 @@ fun OnlineSearchScreen(
                                     if (item.id == mediaMetadata?.id) {
                                         playerConnection.player.togglePlayPause()
                                     } else {
+                                        viewModel.saveSearchHistory(item)
                                         playerConnection.playQueue(
                                             YouTubeQueue.radio(item.toMediaMetadata())
                                         )

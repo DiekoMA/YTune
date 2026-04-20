@@ -489,6 +489,11 @@ fun PlaylistMenu(
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     )
 
+                    HorizontalDivider(
+                        modifier = dividerModifier,
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                    )
+
                     ListItem(
                         headlineContent = {
                             Text(
@@ -518,7 +523,8 @@ fun PlaylistMenu(
                                 }
                             }
                             onDismiss()
-                        }
+                        },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     )
 
                     if (editable && autoPlaylist != true) {

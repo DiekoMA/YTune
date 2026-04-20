@@ -52,6 +52,7 @@
     <string name="filter_albums">Albums</string>
     <string name="filter_artists">Artists</string>
     <string name="filter_playlists">Playlists</string>
+    <string name="libary">Library</string>
     <string name="filter_community_playlists">Community playlists</string>
     <string name="filter_featured_playlists">Featured playlists</string>
     <string name="filter_bookmarked">Bookmarked</string>

@@ -5,6 +5,7 @@
  */
 
 
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 
 package com.diekoma.ytune.ui.screens.library
 
@@ -23,6 +24,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -32,6 +34,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -82,7 +85,7 @@ import com.diekoma.ytune.viewmodels.LibrarySongsViewModel
 @Composable
 fun LibrarySongsScreen(
     navController: NavController,
-    onDeselect: () -> Unit,
+    filterContent: @Composable () -> Unit,
     viewModel: LibrarySongsViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
@@ -135,14 +138,21 @@ fun LibrarySongsScreen(
         }
     }
 
-    Box(
-        modifier =
-            Modifier.fillMaxSize()
-                .pullToRefresh(
-                    state = pullRefreshState,
-                    isRefreshing = isRefreshing,
-                    onRefresh = { if (ytmSync) viewModel.refresh(filter) }
-                ),
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        state = pullRefreshState,
+        onRefresh = {
+            if (ytmSync) viewModel.refresh(filter)
+        },
+        indicator = {
+            PullToRefreshDefaults.LoadingIndicator(
+                state = pullRefreshState,
+                isRefreshing = isRefreshing,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(LocalPlayerAwareWindowInsets.current.asPaddingValues()),
+            )
+        },
     ) {
         LazyColumn(
             state = lazyListState,
@@ -154,19 +164,20 @@ fun LibrarySongsScreen(
             ) {
                 Row {
                     Spacer(Modifier.width(12.dp))
-                    FilterChip(
-                        label = { Text(stringResource(R.string.songs)) },
-                        selected = true,
-                        colors = FilterChipDefaults.filterChipColors(containerColor = MaterialTheme.colorScheme.surface),
-                        onClick = onDeselect,
-                        shape = RoundedCornerShape(16.dp),
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(R.drawable.close),
-                                contentDescription = ""
-                            )
-                        },
-                    )
+                    filterContent()
+//                    FilterChip(
+//                        label = { Text(stringResource(R.string.songs)) },
+//                        selected = true,
+//                        colors = FilterChipDefaults.filterChipColors(containerColor = MaterialTheme.colorScheme.surface),
+//                        onClick = onDeselect,
+//                        shape = RoundedCornerShape(16.dp),
+//                        leadingIcon = {
+//                            Icon(
+//                                painter = painterResource(R.drawable.close),
+//                                contentDescription = ""
+//                            )
+//                        },
+//                    )
                     ChipsRow(
                         chips =
                         listOf(
@@ -345,7 +356,7 @@ fun LibrarySongsScreen(
         }
 
         HideOnScrollFAB(
-            visible = songs.isNotEmpty() == true,
+            visible = songs.isNotEmpty(),
             lazyListState = lazyListState,
             icon = R.drawable.shuffle,
             onClick = {
@@ -356,14 +367,6 @@ fun LibrarySongsScreen(
                     ),
                 )
             },
-        )
-
-        PullToRefreshDefaults.Indicator(
-            isRefreshing = isRefreshing,
-            state = pullRefreshState,
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(LocalPlayerAwareWindowInsets.current.asPaddingValues()),
         )
     }
 }

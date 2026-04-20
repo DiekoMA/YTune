@@ -409,17 +409,23 @@ class SyncUtils @Inject constructor(
                                         name = artist.title,
                                         thumbnailUrl = artist.thumbnail,
                                         channelId = artist.channelId,
+                                        bookmarkedAt = LocalDateTime.now(),
                                     )
                                 )
                             } else {
                                 val existing = dbArtist.artist
-                                if (existing.name != artist.title || existing.thumbnailUrl != artist.thumbnail || existing.channelId != artist.channelId) {
+                                val needsContentUpdate = existing.name != artist.title ||
+                                        existing.thumbnailUrl != artist.thumbnail ||
+                                        existing.channelId != artist.channelId
+
+                                if (needsContentUpdate || existing.bookmarkedAt == null) {
                                     update(
                                         existing.copy(
                                             name = artist.title,
                                             thumbnailUrl = artist.thumbnail,
                                             channelId = artist.channelId,
-                                            lastUpdateTime = java.time.LocalDateTime.now()
+                                            lastUpdateTime = LocalDateTime.now(),
+                                            bookmarkedAt = existing.bookmarkedAt ?: LocalDateTime.now(),
                                         )
                                     )
                                 }

@@ -677,10 +677,8 @@ class MainActivity : ComponentActivity() {
                         listOf(
                             Screens.Home.route,
                             Screens.Search.route,
-                            //Screens.MoodAndGenres.route,
                             Screens.Library.route,
                             Screens.Settings.route
-//                            "settings",
                         )
 
                     val (query, onQueryChange) =
@@ -1567,7 +1565,7 @@ class MainActivity : ComponentActivity() {
                                                         coroutineScope.launch {
                                                             searchBarScrollBehavior.state.resetHeightOffset()
                                                         }
-                                                    } else {
+                                                    }else {
                                                         navController.navigate(screen.route) {
                                                             popUpTo(navController.graph.startDestinationId) {
                                                                 saveState = true
@@ -1831,8 +1829,8 @@ class MainActivity : ComponentActivity() {
     }
 
     companion object {
-        const val ACTION_SEARCH = "moe.koiverse.archivetune.action.SEARCH"
-        const val ACTION_LIBRARY = "moe.koiverse.archivetune.action.LIBRARY"
+        const val ACTION_SEARCH = "com.diekoma.ytune.action.SEARCH"
+        const val ACTION_LIBRARY = "com.diekoma.ytune.action.LIBRARY"
     }
 }
 

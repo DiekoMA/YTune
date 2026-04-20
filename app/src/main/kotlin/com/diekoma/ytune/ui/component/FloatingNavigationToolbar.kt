@@ -338,7 +338,7 @@ private fun FloatingNavigationToolbarItem(
                     interactionSource = interactionSource,
                     indication = LocalIndication.current,
                     role = Role.Tab,
-                    onClick = onClick,
+                    onClick = onClick
                 )
                 .widthIn(min = 48.dp)
                 .padding(

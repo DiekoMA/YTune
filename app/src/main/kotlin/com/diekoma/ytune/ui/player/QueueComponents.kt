@@ -217,19 +217,19 @@ fun CurrentSongHeader(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(0.dp)
             ) {
-                IconButton(
-                    onClick = onLockClick,
-                    modifier = Modifier.size(40.dp),
-                    colors = IconButtonDefaults.iconButtonColors(
-                        contentColor = onBackgroundColor.copy(alpha = 0.7f)
-                    )
-                ) {
-                    Icon(
-                        painter = painterResource(if (locked) R.drawable.lock else R.drawable.lock_open),
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+//                IconButton(
+//                    onClick = onLockClick,
+//                    modifier = Modifier.size(40.dp),
+//                    colors = IconButtonDefaults.iconButtonColors(
+//                        contentColor = onBackgroundColor.copy(alpha = 0.7f)
+//                    )
+//                ) {
+//                    Icon(
+//                        painter = painterResource(if (locked) R.drawable.lock else R.drawable.lock_open),
+//                        contentDescription = null,
+//                        modifier = Modifier.size(20.dp)
+//                    )
+//                }
                 IconButton(
                     onClick = onMenuClick,
                     modifier = Modifier.size(40.dp),

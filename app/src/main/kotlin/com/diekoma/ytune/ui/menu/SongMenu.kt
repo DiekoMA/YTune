@@ -139,16 +139,6 @@ fun SongMenu(
     val (artistSeparators) = rememberPreference(ArtistSeparatorsKey, defaultValue = ",;/&")
     val (externalDownloaderEnabled) = rememberPreference(ExternalDownloaderEnabledKey, defaultValue = false)
     val (externalDownloaderPackage) = rememberPreference(ExternalDownloaderPackageKey, defaultValue = "")
-//    val (speedDialSongIds, onSpeedDialSongIdsChange) = rememberPreference(SpeedDialSongIdsKey, "")
-//    val speedDialSongs = remember(speedDialSongIds) {
-//        speedDialSongIds
-//            .split(",")
-//            .map { it.trim() }
-//            .filter { it.isNotEmpty() }
-//            .distinct()
-//            .take(24)
-//    }
-//    val isInSpeedDial = remember(speedDialSongs, song.id) { song.id in speedDialSongs }
 
     val orderedArtists by produceState(initialValue = emptyList<ArtistEntity>(), song) {
         withContext(Dispatchers.IO) {
@@ -582,7 +572,8 @@ fun SongMenu(
                             }
                         }
                         onDismiss()
-                    }
+                    },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
             }
         }
