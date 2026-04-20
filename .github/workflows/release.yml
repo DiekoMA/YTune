@@ -265,12 +265,16 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           path: downloaded_artifacts/
-
+      - name: Create tag
+        run: git tag "v${{ needs.check-version.outputs.new_version }}"
+        
       - name: Resolve changelog range
         id: changelog_range
         shell: bash
         run: |
-          LAST_TAG="$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || true)"
+          LAST_TAG="$(git describe --tags --abbrev=0 --match "v*" \
+          --exclude "v${{ needs.check-version.outputs.new_version }}" \
+          2>/dev/null || true)"
           
           if [ -n "$LAST_TAG" ]; then
             FROM_REF="$LAST_TAG"
@@ -320,7 +324,7 @@ jobs:
           
           gh release create "v${{ needs.check-version.outputs.new_version }}" \
             --title "${{ needs.check-version.outputs.new_version }}" \
-            --notes "${{ steps.custom_changelog.outputs.changelog }}" \
+            --notes "${{ steps.build_changelog.outputs.changelog }}" \
             "$UNIVERSAL_APK" \
             "${ABI_APKS[@]}"
             
